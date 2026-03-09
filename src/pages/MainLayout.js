@@ -6,8 +6,9 @@ import OrderTab from './OrderTab';
 import MaintenanceTab from './MaintenanceTab';
 import EquipmentTab from './EquipmentTab';
 import SettingTab from './SettingTab';
+import AdminPage from './AdminPage';
 
-const TABS = [
+const USER_TABS = [
   { key: 'film', label: 'Data Film', icon: 'bi-film' },
   { key: 'order', label: 'Data Order Barang', icon: 'bi-box-seam' },
   { key: 'equipment', label: 'Equipment', icon: 'bi-pc-display' },
@@ -15,9 +16,13 @@ const TABS = [
   { key: 'setting', label: 'Setting', icon: 'bi-gear' },
 ];
 
+const ADMIN_TABS = [
+  { key: 'admin', label: 'Panel Admin', icon: 'bi-shield-lock' },
+];
+
 export default function MainLayout() {
   const { user, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState('film');
+  const [activeTab, setActiveTab] = useState(user?.role === 'admin' ? 'admin' : 'film');
   const [settings, setSettings] = useState(null);
 
   const fetchSettings = async () => {
@@ -27,9 +32,13 @@ export default function MainLayout() {
     } catch {}
   };
 
-  useEffect(() => { fetchSettings(); }, []);
+  useEffect(() => {
+    if (user?.role !== 'admin') fetchSettings();
+  }, [user]);
 
   const outletName = settings?.nama_outlet || user?.nama_outlet || 'Outlet';
+  const isAdmin = user?.role === 'admin';
+  const tabs = isAdmin ? ADMIN_TABS : USER_TABS;
 
   return (
     <div className="d-flex flex-column" style={{ minHeight: '100vh' }}>
@@ -37,7 +46,8 @@ export default function MainLayout() {
         <div className="container-fluid">
           <span className="navbar-brand">
             Teknikal-XXI
-            <span className="outlet-name ms-2">| {outletName}</span>
+            {!isAdmin && <span className="outlet-name ms-2">| {outletName}</span>}
+            {isAdmin && <span className="outlet-name ms-2">| Admin</span>}
           </span>
 
           <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -47,7 +57,7 @@ export default function MainLayout() {
 
           <div className="collapse navbar-collapse" id="navbarNav">
             <ul className="navbar-nav me-auto ms-3">
-              {TABS.map(tab => (
+              {tabs.map(tab => (
                 <li className="nav-item" key={tab.key}>
                   <button
                     className={`nav-link btn btn-link ${activeTab === tab.key ? 'active' : ''}`}
@@ -62,6 +72,11 @@ export default function MainLayout() {
             </ul>
 
             <div className="d-flex align-items-center gap-2">
+              {isAdmin && (
+                <span className="badge" style={{ background: '#c9a84c', color: '#1e3a5f' }}>
+                  <i className="bi bi-shield-fill me-1" />Admin
+                </span>
+              )}
               <span className="text-white small">
                 <i className="bi bi-person-circle me-1" />
                 {user?.nama_lengkap || user?.email}
@@ -76,6 +91,7 @@ export default function MainLayout() {
       </nav>
 
       <div className="content-area flex-grow-1">
+        {activeTab === 'admin' && <AdminPage />}
         {activeTab === 'film' && <FilmTab settings={settings} outletName={outletName} />}
         {activeTab === 'order' && <OrderTab settings={settings} outletName={outletName} />}
         {activeTab === 'equipment' && <EquipmentTab outletName={outletName} />}
@@ -84,7 +100,7 @@ export default function MainLayout() {
       </div>
 
       <footer className="text-center py-2" style={{ fontSize: '0.75rem', color: '#aaa', background: '#f8f9fa', borderTop: '1px solid #dee2e6' }}>
-        &copy; {new Date().getFullYear()} Teknikal-XXI | {outletName}
+        &copy; {new Date().getFullYear()} Teknikal-XXI {!isAdmin && `| ${outletName}`}
       </footer>
     </div>
   );
