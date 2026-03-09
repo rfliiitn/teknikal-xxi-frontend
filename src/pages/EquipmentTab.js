@@ -120,7 +120,7 @@ export default function EquipmentTab({ outletName }) {
                   <th>Aksi</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody style={{ textTransform: 'uppercase' }}>
                 {filtered.length === 0 ? (
                   <tr><td colSpan={8} className="text-center text-muted py-3">Tidak ada data</td></tr>
                 ) : filtered.map((e, i) => (
@@ -132,9 +132,9 @@ export default function EquipmentTab({ outletName }) {
                     <td>{e.server}</td>
                     <td>{e.kapasitas_server || '-'}</td>
                     <td>{e.sisa_kapasitas || '-'}</td>
-                    <td style={{ whiteSpace: 'nowrap' }}>
-                      <button className="btn btn-sm btn-warning me-1" onClick={() => openEdit(e)}><i className="bi bi-pencil" /></button>
-                      <button className="btn btn-sm btn-danger" onClick={() => handleDelete(e.id)}><i className="bi bi-trash" /></button>
+                    <td style={{ whiteSpace: 'nowrap' }} className="action-cell">
+                      <button className="btn btn-sm btn-warning me-1 action-btn" onClick={() => openEdit(e)}><i className="bi bi-pencil" /></button>
+                      <button className="btn btn-sm btn-danger action-btn" onClick={() => handleDelete(e.id)}><i className="bi bi-trash" /></button>
                     </td>
                   </tr>
                 ))}

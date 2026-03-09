@@ -376,24 +376,24 @@ export default function FilmTab({ settings, outletName }) {
                   <th>Rumah Prod.</th><th>Keterangan</th><th>Aksi</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody style={{ textTransform: 'uppercase' }}>
                 {paginated.length === 0 ? (
                   <tr><td colSpan={16} className="text-center text-muted py-3">Tidak ada data</td></tr>
                 ) : paginated.map((f, i) => (
                   <tr key={f.id} className={rowClass(f.status_tayang)}>
                     <td><input type="checkbox" className="form-check-input" checked={selected.includes(f.id)} onChange={() => toggleSelect(f.id)} /></td>
                     <td>{(page - 1) * PER_PAGE + i + 1}</td>
-                    <td style={{ maxWidth: 150, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{f.judul_film}</td>
-                    <td style={{ maxWidth: 120, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{f.nama_file}</td>
+                    <td style={{ maxWidth: 150, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textTransform: 'uppercase' }}>{f.judul_film}</td>
+                    <td style={{ maxWidth: 120, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textTransform: 'uppercase' }}>{f.nama_file}</td>
                     <td>{f.format_film}</td><td>{f.tanggal_upload}</td><td>{f.petugas_upload}</td>
                     <td>{f.tanggal_tayang || '-'}</td>
                     <td><span className={`badge badge-${f.status_tayang?.toLowerCase().replace(/ /g, '-')}`}>{f.status_tayang}</span></td>
                     <td>{f.status_kdm}</td><td>{f.jumlah_file || '-'}</td>
                     <td>{f.dikirim_dari || '-'}</td><td>{f.dikirim_ke || '-'}</td>
                     <td>{f.rumah_produksi || '-'}</td><td>{f.keterangan || '-'}</td>
-                    <td style={{ whiteSpace: 'nowrap' }}>
-                      <button className="btn btn-sm btn-warning me-1" onClick={() => openEdit(f)}><i className="bi bi-pencil" /></button>
-                      <button className="btn btn-sm btn-danger" onClick={() => handleDelete(f.id)}><i className="bi bi-trash" /></button>
+                    <td style={{ whiteSpace: 'nowrap' }} className="action-cell">
+                      <button className="btn btn-sm btn-warning me-1 action-btn" onClick={() => openEdit(f)}><i className="bi bi-pencil" /></button>
+                      <button className="btn btn-sm btn-danger action-btn" onClick={() => handleDelete(f.id)}><i className="bi bi-trash" /></button>
                     </td>
                   </tr>
                 ))}

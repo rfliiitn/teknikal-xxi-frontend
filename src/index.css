@@ -282,3 +282,17 @@ h1, h2, h3, h4, h5, h6 {
   .table-toolbar { gap: 0.4rem; }
   .table-toolbar .search-input { min-width: 100%; }
 }
+
+/* ── ACTION BUTTONS - hidden, show on row hover ── */
+.action-btn {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+tr:hover .action-btn {
+  opacity: 1;
+}
+
+.action-cell {
+  min-width: 72px;
+}

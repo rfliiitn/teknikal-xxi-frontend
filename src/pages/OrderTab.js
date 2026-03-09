@@ -127,7 +127,7 @@ export default function OrderTab({ settings, outletName }) {
                   <th>Aksi</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody style={{ textTransform: 'uppercase' }}>
                 {paginated.length === 0 ? (
                   <tr><td colSpan={9} className="text-center text-muted py-3">Tidak ada data</td></tr>
                 ) : paginated.map((o, i) => (
@@ -140,9 +140,9 @@ export default function OrderTab({ settings, outletName }) {
                     <td>{o.tanggal_diterima || '-'}</td>
                     <td><span className={`badge badge-${o.status_barang?.toLowerCase().replace(/ /g, '-')}`}>{o.status_barang}</span></td>
                     <td>{o.keterangan || '-'}</td>
-                    <td style={{ whiteSpace: 'nowrap' }}>
-                      <button className="btn btn-sm btn-warning me-1" onClick={() => openEdit(o)}><i className="bi bi-pencil" /></button>
-                      <button className="btn btn-sm btn-danger" onClick={() => handleDelete(o.id)}><i className="bi bi-trash" /></button>
+                    <td style={{ whiteSpace: 'nowrap' }} className="action-cell">
+                      <button className="btn btn-sm btn-warning me-1 action-btn" onClick={() => openEdit(o)}><i className="bi bi-pencil" /></button>
+                      <button className="btn btn-sm btn-danger action-btn" onClick={() => handleDelete(o.id)}><i className="bi bi-trash" /></button>
                     </td>
                   </tr>
                 ))}
