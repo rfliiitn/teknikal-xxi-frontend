@@ -109,24 +109,32 @@ const buildPDF = (films, outletName, settings, equipments) => {
   const finalY = doc.lastAutoTable.finalY;
 
   // ── SECTION BAWAH: YANG MEMBUAT | NOTE | MENGETAHUI ──
-  // Layout sejajar 3 kolom seperti referensi
   const sectionY = finalY + 8;
-  const leftX   = marginL + 4;        // kiri
-  const noteX   = pageWidth / 2 - 20; // tengah (note)
-  const rightX  = pageWidth - 60;     // kanan
+
+  // Kolom kiri: center di 1/4 kiri halaman
+  const leftCx  = pageWidth * 0.17;   // pusat kolom kiri
+  const leftLineX = leftCx - 27;      // mulai garis (54mm lebar)
+
+  // Kolom tengah: center halaman
+  const noteX = pageWidth / 2;
+
+  // Kolom kanan: center di 3/4 kanan halaman
+  const rightCx   = pageWidth * 0.83; // pusat kolom kanan
+  const rightLineX = rightCx - 27;
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
 
-  // Label atas
-  doc.text('YANG MEMBUAT', leftX, sectionY);
-  doc.text('MENGETAHUI', rightX, sectionY);
+  // Label atas — rata tengah kolom masing-masing
+  doc.text('YANG MEMBUAT', leftCx, sectionY, { align: 'center' });
+  doc.text('MENGETAHUI', rightCx, sectionY, { align: 'center' });
 
-  // NOTE di tengah
+  // NOTE di tengah — rata kiri dari noteX - offset
+  const noteStartX = noteX - 32;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
-  doc.text('NOTE :', noteX, sectionY);
-  doc.text('SISA KAPASITAS PENYIMPANAN SERVER', noteX, sectionY + 5);
+  doc.text('NOTE :', noteStartX, sectionY);
+  doc.text('SISA KAPASITAS PENYIMPANAN SERVER', noteStartX, sectionY + 5);
 
   // Daftar server
   doc.setFont('helvetica', 'normal');
@@ -144,41 +152,40 @@ const buildPDF = (films, outletName, settings, equipments) => {
   serverLines.forEach(({ label, val }, idx) => {
     const y = sectionY + 11 + idx * 5;
     doc.setFont('helvetica', 'normal');
-    doc.text(`- `, noteX, y);
+    doc.text('- ', noteStartX, y);
     doc.setFont('helvetica', 'bold');
-    doc.text(label, noteX + 3, y);
+    doc.text(label, noteStartX + 4, y);
     doc.setFont('helvetica', 'normal');
-    if (val) doc.text(` : ${val}`, noteX + 3 + doc.getTextWidth(label), y);
+    if (val) doc.text(` : ${val}`, noteStartX + 4 + doc.getTextWidth(label), y);
   });
 
   // Garis tanda tangan
-  const lineY = sectionY + 22;
+  const lineY = sectionY + 25;
   doc.setLineWidth(0.4);
-  doc.line(leftX, lineY, leftX + 50, lineY);
-  doc.line(rightX, lineY, rightX + 50, lineY);
+  doc.line(leftLineX, lineY, leftLineX + 54, lineY);
+  doc.line(rightLineX, lineY, rightLineX + 54, lineY);
 
-  // Nama & jabatan
+  // Nama & jabatan — rata tengah kolom masing-masing
   const nameY = lineY + 5;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
-  doc.text((settings?.yang_membuat_nama || '').toUpperCase(), leftX, nameY);
+  doc.text((settings?.yang_membuat_nama || '').toUpperCase(), leftCx, nameY, { align: 'center' });
   doc.setFont('helvetica', 'normal');
-  doc.text((settings?.yang_membuat_divisi || '').toUpperCase(), leftX, nameY + 5);
+  doc.text((settings?.yang_membuat_divisi || '').toUpperCase(), leftCx, nameY + 5, { align: 'center' });
 
   doc.setFont('helvetica', 'bold');
-  doc.text((settings?.yang_mengetahui_nama || '').toUpperCase(), rightX, nameY);
+  doc.text((settings?.yang_mengetahui_nama || '').toUpperCase(), rightCx, nameY, { align: 'center' });
   doc.setFont('helvetica', 'normal');
-  doc.text((settings?.yang_mengetahui_divisi || '').toUpperCase(), rightX, nameY + 5);
+  doc.text((settings?.yang_mengetahui_divisi || '').toUpperCase(), rightCx, nameY + 5, { align: 'center' });
 
-  // ── KETERANGAN WARNA — tabel kotak pojok kiri bawah ──
-  const ketY = pageHeight - 32;
+  // ── KETERANGAN WARNA — tepat di bawah tanda tangan "Yang Membuat" ──
+  const ketY = nameY + 12;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8.5);
   doc.setTextColor(0,0,0);
-  doc.text('KETERANGAN :', marginL, ketY);
+  doc.text('KETERANGAN :', leftLineX, ketY);
 
-  // Gambar tabel keterangan manual
-  const tblX = marginL;
+  const tblX = leftLineX;
   const tblY = ketY + 2;
   const col1W = 28; const col2W = 34; const rowH = 7;
   const rows = [
@@ -187,12 +194,9 @@ const buildPDF = (films, outletName, settings, equipments) => {
     { label: 'FONT MERAH', ket: 'SUDAH TAYANG', color: [200,0,0] },
   ];
 
-  // border luar
   doc.setLineWidth(0.3);
   doc.rect(tblX, tblY, col1W + col2W, rowH * rows.length);
-  // garis vertikal tengah
   doc.line(tblX + col1W, tblY, tblX + col1W, tblY + rowH * rows.length);
-  // garis horizontal antar baris
   rows.forEach((_, i) => {
     if (i > 0) doc.line(tblX, tblY + rowH * i, tblX + col1W + col2W, tblY + rowH * i);
   });
