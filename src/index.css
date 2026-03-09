@@ -236,7 +236,7 @@ h1, h2, h3, h4, h5, h6 {
 .table-toolbar {
   display: flex;
   gap: 0.5rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   margin-bottom: 1rem;
 }
