@@ -69,7 +69,7 @@ export default function LoginPage() {
               style={{ borderLeft: 'none' }}
               type="text"
               name="email"
-              placeholder="nama@cinema21.net atau username"
+              placeholder="Email atau username"
               value={form.email}
               onChange={handleChange}
               onKeyDown={handleKeyDown}

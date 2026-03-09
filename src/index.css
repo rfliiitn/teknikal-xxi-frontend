@@ -5,7 +5,7 @@
   --primary-light: #3b82f6;
   --primary-dark: #1d4ed8;
   --accent: #f59e0b;
-  --bg: #e5e7eb;
+  --bg: #d1d5db;
   --surface: #ffffff;
   --text: #0f172a;
   --text-muted: #64748b;
@@ -198,7 +198,7 @@ h1, h2, h3, h4, h5, h6 {
 /* ── AUTH PAGES ── */
 .auth-wrapper {
   min-height: 100vh;
-  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 50%, #e0f2fe 100%);
+  background: #d1d5db;
   display: flex;
   align-items: center;
   justify-content: center;
