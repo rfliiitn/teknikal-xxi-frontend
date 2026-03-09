@@ -297,7 +297,8 @@ export default function FilmTab({ settings, outletName }) {
           <button className="btn btn-primary btn-sm" onClick={openAdd}><i className="bi bi-plus-lg me-1" />Tambah</button>
           <button className="btn btn-danger btn-sm" onClick={handleBulkDelete} disabled={!selected.length}><i className="bi bi-trash me-1" />Hapus ({selected.length})</button>
           <button className="btn btn-outline-secondary btn-sm" onClick={() => setShowTrash(true)}><i className="bi bi-trash2 me-1" />Sampah</button>
-          <button className="btn btn-outline-dark btn-sm" onClick={handlePreviewPDF}><i className="bi bi-file-pdf me-1" />Preview PDF</button>
+          <button className="btn btn-outline-dark btn-sm" onClick={handlePreviewPDF}><i className="bi bi-eye me-1" />Preview PDF</button>
+          <button className="btn btn-outline-secondary btn-sm" onClick={handleDownloadPDF}><i className="bi bi-download me-1" />Download PDF</button>
           <button className="btn btn-outline-info btn-sm" onClick={() => setShowServerUpdate(true)}><i className="bi bi-hdd me-1" />Update Server</button>
         </div>
 

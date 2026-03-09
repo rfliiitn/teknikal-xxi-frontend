@@ -10,9 +10,9 @@ import AdminPage from './AdminPage';
 
 const USER_TABS = [
   { key: 'film', label: 'Data Film', icon: 'bi-film' },
+  { key: 'maintenance', label: 'Data Maintenance', icon: 'bi-tools' },
   { key: 'order', label: 'Data Order Barang', icon: 'bi-box-seam' },
   { key: 'equipment', label: 'Equipment', icon: 'bi-pc-display' },
-  { key: 'maintenance', label: 'Data Maintenance', icon: 'bi-tools' },
   { key: 'setting', label: 'Setting', icon: 'bi-gear' },
 ];
 
@@ -23,6 +23,7 @@ const ADMIN_TABS = [
 export default function MainLayout() {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState(user?.role === 'admin' ? 'admin' : 'film');
+  const [navOpen, setNavOpen] = useState(false);
   const [settings, setSettings] = useState(null);
 
   const fetchSettings = async () => {
@@ -50,18 +51,18 @@ export default function MainLayout() {
             {isAdmin && <span className="outlet-name ms-2">| Admin</span>}
           </span>
 
-          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <button className="navbar-toggler" type="button" onClick={() => setNavOpen(v => !v)}>
             <span className="navbar-toggler-icon" />
           </button>
 
-          <div className="collapse navbar-collapse" id="navbarNav">
+          <div className={`navbar-collapse${navOpen ? " show" : ""}`} id="navbarNav">
             <ul className="navbar-nav me-auto ms-3">
               {tabs.map(tab => (
                 <li className="nav-item" key={tab.key}>
                   <button
                     className={`nav-link btn btn-link ${activeTab === tab.key ? 'active' : ''}`}
                     style={{ textDecoration: 'none' }}
-                    onClick={() => setActiveTab(tab.key)}
+                    onClick={() => { setActiveTab(tab.key); setNavOpen(false); }}
                   >
                     <i className={`bi ${tab.icon} me-1`} />
                     {tab.label}
@@ -98,8 +99,8 @@ export default function MainLayout() {
         {activeTab === 'setting' && <SettingTab settings={settings} onSaved={fetchSettings} />}
       </div>
 
-      <footer className="text-center py-2" style={{ fontSize: '0.75rem', color: '#aaa', background: '#f8f9fa', borderTop: '1px solid #dee2e6' }}>
-        &copy; {new Date().getFullYear()} Teknikal-XXI {!isAdmin && `| ${outletName}`}
+      <footer className="text-center py-2" style={{ fontSize: '0.75rem', color: '#94a3b8', background: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+        &copy; {new Date().getFullYear()} Rafli Trinugroho. All rights reserved.
       </footer>
     </div>
   );

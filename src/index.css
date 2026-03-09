@@ -5,7 +5,7 @@
   --primary-light: #3b82f6;
   --primary-dark: #1d4ed8;
   --accent: #f59e0b;
-  --bg: #f1f5f9;
+  --bg: #e5e7eb;
   --surface: #ffffff;
   --text: #0f172a;
   --text-muted: #64748b;
@@ -23,6 +23,7 @@ body {
   color: var(--text);
   margin: 0;
 }
+
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'DM Sans', sans-serif;
@@ -111,10 +112,14 @@ h1, h2, h3, h4, h5, h6 {
 /* Mobile navbar */
 @media (max-width: 991px) {
   .app-navbar .navbar-collapse {
+    display: none;
     background: #fff;
     padding: 0.75rem 0;
     border-top: 1px solid var(--border);
     margin-top: 0.5rem;
+  }
+  .app-navbar .navbar-collapse.show {
+    display: block;
   }
   .app-navbar .navbar-nav { margin-bottom: 0.75rem; }
   .app-navbar .nav-link { padding: 0.5rem 0.75rem !important; display: block; width: 100%; }
