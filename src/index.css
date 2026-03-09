@@ -130,7 +130,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ── CARDS & TABLES ── */
 .data-card {
-  background: var(--surface);
+  background: #f3f4f6;
   border: 1px solid var(--border);
   border-radius: 10px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
@@ -230,7 +230,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ── CONTENT ── */
-.content-area { padding: 1.5rem; }
+.content-area { padding: 1.5rem; background: #d1d5db; }
 
 /* ── TOOLBAR ── */
 .table-toolbar {
@@ -275,7 +275,7 @@ h1, h2, h3, h4, h5, h6 {
 .form-label { font-size: 0.85rem; font-weight: 500; color: var(--text); }
 
 /* ── RESPONSIVE ── */
-.table-responsive { border-radius: 8px; }
+.table-responsive { border-radius: 8px; background: #ffffff; }
 @media (max-width: 576px) {
   .content-area { padding: 1rem; }
   .auth-card { padding: 1.5rem; }

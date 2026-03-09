@@ -110,7 +110,7 @@ export default function LoginPage() {
         </div>
 
         {/* Submit */}
-        <button className="btn btn-primary w-100 fw-semibold py-2" onClick={handleSubmit} disabled={loading}>
+        <button type="button" className="btn btn-primary w-100 fw-semibold py-2" onClick={handleSubmit} disabled={loading}>
           {loading
             ? <><span className="spinner-border spinner-border-sm me-2" />Memproses...</>
             : <><i className="bi bi-box-arrow-in-right me-2" />Masuk</>
