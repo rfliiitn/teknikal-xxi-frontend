@@ -7,9 +7,6 @@
   --text: #1a1a2e;
   --text-muted: #6c757d;
   --border: #dee2e6;
-  --success: #198754;
-  --danger: #dc3545;
-  --warning: #ffc107;
 }
 
 * { box-sizing: border-box; }
@@ -60,6 +57,33 @@ h1, h2, h3, h4, h5, h6 {
   background: rgba(255,255,255,0.12);
 }
 
+/* Mobile navbar */
+@media (max-width: 991px) {
+  .app-navbar .navbar-collapse {
+    background: var(--primary);
+    padding: 0.75rem 0;
+    border-top: 1px solid rgba(255,255,255,0.15);
+    margin-top: 0.5rem;
+  }
+
+  .app-navbar .navbar-nav {
+    margin-bottom: 0.75rem;
+  }
+
+  .app-navbar .nav-link {
+    padding: 0.5rem 0.75rem !important;
+    display: block;
+    width: 100%;
+    text-align: left;
+  }
+
+  .app-navbar .d-flex.align-items-center {
+    padding: 0.5rem 0;
+    flex-wrap: wrap;
+    gap: 0.5rem !important;
+  }
+}
+
 /* Cards & Tables */
 .data-card {
   background: var(--surface);
@@ -83,30 +107,35 @@ h1, h2, h3, h4, h5, h6 {
   vertical-align: middle;
 }
 
-.table tbody tr:hover {
-  background-color: rgba(30, 58, 95, 0.04);
+.table tbody tr:hover td {
+  filter: brightness(0.95);
 }
 
 /* Film status row colors */
-.row-sedang-tayang {
+.table tbody tr.row-sedang-tayang td {
   background-color: #c6efce !important;
+  color: #155724 !important;
 }
 
-.row-sudah-tayang {
+.table tbody tr.row-sudah-tayang td {
   background-color: #ffc7ce !important;
+  color: #721c24 !important;
 }
 
-.row-belum-tayang {
+.table tbody tr.row-belum-tayang td {
   background-color: #ffffff;
+  color: var(--text);
 }
 
 /* Order status row colors */
-.row-sudah-diterima {
+.table tbody tr.row-sudah-diterima td {
   background-color: #c6efce !important;
+  color: #155724 !important;
 }
 
-.row-belum-diterima {
+.table tbody tr.row-belum-diterima td {
   background-color: #ffc7ce !important;
+  color: #721c24 !important;
 }
 
 /* Buttons */
@@ -190,7 +219,7 @@ h1, h2, h3, h4, h5, h6 {
   filter: invert(1);
 }
 
-/* Badge */
+/* Badge status */
 .badge-belum-tayang { background-color: #6c757d; }
 .badge-sedang-tayang { background-color: #198754; }
 .badge-sudah-tayang { background-color: #dc3545; }
@@ -199,3 +228,10 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Responsive */
 .table-responsive { border-radius: 6px; }
+
+@media (max-width: 576px) {
+  .content-area { padding: 1rem; }
+  .auth-card { padding: 1.5rem; }
+  .table-toolbar { gap: 0.4rem; }
+  .table-toolbar .search-input { min-width: 100%; }
+}
