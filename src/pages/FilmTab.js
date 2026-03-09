@@ -193,8 +193,6 @@ export default function FilmTab({ settings, outletName }) {
   const [showTrash, setShowTrash] = useState(false);
   const [saving, setSaving] = useState(false);
   const [page, setPage] = useState(1);
-  const [showPdfPreview, setShowPdfPreview] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState('');
   const [showServerUpdate, setShowServerUpdate] = useState(false);
   const [equipments, setEquipments] = useState([]);
   const [serverUpdate, setServerUpdate] = useState({ equipment_id: '', sisa_kapasitas: '' });
@@ -267,8 +265,7 @@ export default function FilmTab({ settings, outletName }) {
   const handlePreviewPDF = () => {
     const doc = buildPDF(filtered, outletName, settings, equipments);
     const url = doc.output('bloburl');
-    setPdfUrl(url);
-    setShowPdfPreview(true);
+    window.open(url, '_blank');
   };
 
   const handleDownloadPDF = () => {
@@ -463,36 +460,8 @@ export default function FilmTab({ settings, outletName }) {
         </div>
       )}
 
-      {/* PDF Preview Modal */}
-      {showPdfPreview && (
-        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.7)' }}>
-          <div className="modal-dialog modal-xl modal-dialog-scrollable" style={{ maxWidth: '90vw' }}>
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title"><i className="bi bi-file-pdf me-2" />Preview PDF — Laporan Data Film</h5>
-                <button className="btn-close" onClick={() => { setShowPdfPreview(false); setPdfUrl(''); }} />
-              </div>
-              <div className="modal-body">
-                <div className="d-none d-md-block" style={{ height: '70vh' }}>
-                  <iframe src={pdfUrl} width="100%" height="100%" title="PDF Preview" style={{ border: 'none', borderRadius: 4 }} />
-                </div>
-                <div className="d-md-none text-center py-4">
-                  <i className="bi bi-file-pdf text-danger" style={{ fontSize: '3rem' }} />
-                  <div className="mt-3 mb-1 fw-semibold">Preview tidak tersedia di mobile</div>
-                  <div className="text-muted small mb-4">Tap tombol di bawah untuk membuka atau download PDF</div>
-                  <a href={pdfUrl} target="_blank" rel="noreferrer" className="btn btn-outline-primary me-2">
-                    <i className="bi bi-box-arrow-up-right me-1" />Buka PDF
-                  </a>
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button className="btn btn-secondary" onClick={() => { setShowPdfPreview(false); setPdfUrl(''); }}>Tutup</button>
-                <button className="btn btn-primary" onClick={handleDownloadPDF}><i className="bi bi-download me-1" />Download PDF</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+
+    
 
       {/* Update Server Modal */}
       {showServerUpdate && (
@@ -534,10 +503,7 @@ export default function FilmTab({ settings, outletName }) {
                           value={serverUpdate.sisa_kapasitas}
                           onChange={e => setServerUpdate(s => ({ ...s, sisa_kapasitas: e.target.value }))}
                         />
-                        <select className="form-select" style={{ maxWidth: 80 }} value={serverUpdate.satuan} onChange={e => setServerUpdate(s => ({ ...s, satuan: e.target.value }))}>
-                          <option value="TB">TB</option>
-                          <option value="MB">MB</option>
-                        </select>
+                        <span className="input-group-text">MB</span>
                       </div>
                     </div>
                   </div>
