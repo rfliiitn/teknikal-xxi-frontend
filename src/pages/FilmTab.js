@@ -39,21 +39,30 @@ const textColor = (status) => {
 const buildPDF = (films, outletName, settings, equipments) => {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageWidth = doc.internal.pageSize.width;
+  const pageHeight = doc.internal.pageSize.height;
+  const marginL = 14;
+  const marginR = 14;
 
   // ── HEADER ──
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(13);
   doc.text('LAPORAN DATA FILM DI SERVER', pageWidth / 2, 14, { align: 'center' });
-  doc.setDrawColor(0);
-  doc.setLineWidth(0.5);
-  doc.line(14, 17, pageWidth - 14, 17);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
-  doc.text(`Nama Outlet : ${(outletName || '-').toUpperCase()}`, 14, 23);
-  doc.text(`Periode     : ${formatPeriode()}`, 14, 29);
+  doc.text('Nama Outlet', marginL, 23);
+  doc.text(':', marginL + 26, 23);
+  doc.setFont('helvetica', 'bold');
+  doc.text((outletName || '-').toUpperCase(), marginL + 30, 23);
 
-  // ── TABEL ──
+  doc.setFont('helvetica', 'normal');
+  doc.text('Periode', marginL, 29);
+  doc.text(':', marginL + 26, 29);
+  doc.setFont('helvetica', 'bold');
+  doc.text(formatPeriode(), marginL + 30, 29);
+
+  // ── TABEL UTAMA ──
+  const AMBER = [255, 192, 0];
   autoTable(doc, {
     startY: 33,
     head: [[
@@ -64,20 +73,29 @@ const buildPDF = (films, outletName, settings, equipments) => {
       { content: 'KDM\n(ada / tidak)', styles: { halign: 'center' } }
     ]],
     body: films.map((f, i) => [
-      i + 1,
+      { content: i + 1, styles: { halign: 'center' } },
       f.judul_film?.toUpperCase() || '',
-      f.status_tayang?.toUpperCase() || '',
-      f.format_film?.toUpperCase() || '',
-      f.status_kdm?.toUpperCase() || ''
+      { content: f.status_tayang?.toUpperCase() || '', styles: { halign: 'center' } },
+      { content: f.format_film?.toUpperCase() || '', styles: { halign: 'center' } },
+      { content: f.status_kdm?.toUpperCase() || '', styles: { halign: 'center' } }
     ]),
-    styles: { fontSize: 9, cellPadding: 2.5, lineColor: [0, 0, 0], lineWidth: 0.3, textColor: [0, 0, 0] },
-    headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.3, lineColor: [0, 0, 0], fontSize: 8.5 },
+    styles: { fontSize: 9, cellPadding: 2.5, lineColor: [0,0,0], lineWidth: 0.3, textColor: [0,0,0] },
+    headStyles: {
+      fillColor: AMBER,
+      textColor: [0,0,0],
+      fontStyle: 'bold',
+      lineWidth: 0.3,
+      lineColor: [0,0,0],
+      fontSize: 8.5,
+      halign: 'center',
+      valign: 'middle'
+    },
     columnStyles: {
-      0: { cellWidth: 10, halign: 'center' },
+      0: { cellWidth: 10 },
       1: { cellWidth: 70 },
-      2: { cellWidth: 38, halign: 'center' },
-      3: { cellWidth: 28, halign: 'center' },
-      4: { cellWidth: 32 }
+      2: { cellWidth: 40 },
+      3: { cellWidth: 27 },
+      4: { cellWidth: 31 }
     },
     didParseCell: (data) => {
       if (data.section === 'body') {
@@ -85,77 +103,110 @@ const buildPDF = (films, outletName, settings, equipments) => {
         data.cell.styles.textColor = textColor(film?.status_tayang);
       }
     },
-    margin: { left: 14, right: 14 }
+    margin: { left: marginL, right: marginR }
   });
 
   const finalY = doc.lastAutoTable.finalY;
-  const pageHeight = doc.internal.pageSize.height;
 
-  // ── NOTE KAPASITAS SERVER (di tengah, antara tabel dan tanda tangan) ──
-  const noteY = finalY + 8;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.text('NOTE :', pageWidth / 2, noteY, { align: 'center' });
-  doc.text('SISA KAPASITAS PENYIMPANAN SERVER', pageWidth / 2, noteY + 5, { align: 'center' });
+  // ── SECTION BAWAH: YANG MEMBUAT | NOTE | MENGETAHUI ──
+  // Layout sejajar 3 kolom seperti referensi
+  const sectionY = finalY + 8;
+  const leftX   = marginL + 4;        // kiri
+  const noteX   = pageWidth / 2 - 20; // tengah (note)
+  const rightX  = pageWidth - 60;     // kanan
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
+  doc.setFontSize(10);
 
+  // Label atas
+  doc.text('YANG MEMBUAT', leftX, sectionY);
+  doc.text('MENGETAHUI', rightX, sectionY);
+
+  // NOTE di tengah
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('NOTE :', noteX, sectionY);
+  doc.text('SISA KAPASITAS PENYIMPANAN SERVER', noteX, sectionY + 5);
+
+  // Daftar server
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
   const serverLines = [];
   if (equipments && equipments.length > 0) {
     equipments.forEach(eq => {
-      serverLines.push(`- ${(eq.server || 'SERVER').toUpperCase()} STD ${eq.studio} : ${eq.sisa_kapasitas || '-'}`);
+      const nama = eq.server ? `STD ${eq.studio} - ${eq.server.toUpperCase()}` : `STD ${eq.studio}`;
+      serverLines.push({ label: nama, val: eq.sisa_kapasitas || '-' });
     });
   } else {
-    serverLines.push('- Tidak ada data server');
+    serverLines.push({ label: 'Tidak ada data server', val: '' });
   }
 
-  // Hitung lebar terlebar untuk center
-  serverLines.forEach((line, idx) => {
-    doc.text(line, pageWidth / 2, noteY + 10 + (idx * 5), { align: 'center' });
+  serverLines.forEach(({ label, val }, idx) => {
+    const y = sectionY + 11 + idx * 5;
+    doc.setFont('helvetica', 'normal');
+    doc.text(`- `, noteX, y);
+    doc.setFont('helvetica', 'bold');
+    doc.text(label, noteX + 3, y);
+    doc.setFont('helvetica', 'normal');
+    if (val) doc.text(` : ${val}`, noteX + 3 + doc.getTextWidth(label), y);
   });
 
-  const noteEndY = noteY + 10 + (serverLines.length * 5);
+  // Garis tanda tangan
+  const lineY = sectionY + 22;
+  doc.setLineWidth(0.4);
+  doc.line(leftX, lineY, leftX + 50, lineY);
+  doc.line(rightX, lineY, rightX + 50, lineY);
 
-  // ── TANDA TANGAN ──
-  const ttY = noteEndY + 10;
-  const leftX = 20;
-  const rightX = pageWidth - 65;
-
+  // Nama & jabatan
+  const nameY = lineY + 5;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text((settings?.yang_membuat_nama || '').toUpperCase(), leftX, nameY);
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.text('YANG MEMBUAT', leftX, ttY);
-  doc.text('MENGETAHUI', rightX, ttY);
-
-  doc.line(leftX, ttY + 22, leftX + 50, ttY + 22);
-  doc.line(rightX, ttY + 22, rightX + 50, ttY + 22);
+  doc.text((settings?.yang_membuat_divisi || '').toUpperCase(), leftX, nameY + 5);
 
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.text((settings?.yang_membuat_nama || '').toUpperCase(), leftX, ttY + 27);
+  doc.text((settings?.yang_mengetahui_nama || '').toUpperCase(), rightX, nameY);
   doc.setFont('helvetica', 'normal');
-  doc.text(settings?.yang_membuat_divisi || '', leftX, ttY + 32);
+  doc.text((settings?.yang_mengetahui_divisi || '').toUpperCase(), rightX, nameY + 5);
 
-  doc.setFont('helvetica', 'bold');
-  doc.text((settings?.yang_mengetahui_nama || '').toUpperCase(), rightX, ttY + 27);
-  doc.setFont('helvetica', 'normal');
-  doc.text(settings?.yang_mengetahui_divisi || '', rightX, ttY + 32);
-
-  // ── KETERANGAN WARNA (pojok kiri bawah) ──
-  const ketY = pageHeight - 22;
+  // ── KETERANGAN WARNA — tabel kotak pojok kiri bawah ──
+  const ketY = pageHeight - 32;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8.5);
-  doc.setTextColor(0, 0, 0);
-  doc.text('KETERANGAN :', 14, ketY);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(0, 0, 0);
-  doc.text('FONT HITAM    BELUM TAYANG', 14, ketY + 5);
-  doc.setTextColor(0, 128, 0);
-  doc.text('FONT HIJAU    SEDANG TAYANG', 14, ketY + 10);
-  doc.setTextColor(255, 0, 0);
-  doc.text('FONT MERAH  SUDAH TAYANG', 14, ketY + 15);
-  doc.setTextColor(0, 0, 0);
+  doc.setTextColor(0,0,0);
+  doc.text('KETERANGAN :', marginL, ketY);
 
+  // Gambar tabel keterangan manual
+  const tblX = marginL;
+  const tblY = ketY + 2;
+  const col1W = 28; const col2W = 34; const rowH = 7;
+  const rows = [
+    { label: 'FONT HITAM', ket: 'BELUM TAYANG', color: [0,0,0] },
+    { label: 'FONT HIJAU', ket: 'SEDANG TAYANG', color: [0,128,0] },
+    { label: 'FONT MERAH', ket: 'SUDAH TAYANG', color: [200,0,0] },
+  ];
+
+  // border luar
+  doc.setLineWidth(0.3);
+  doc.rect(tblX, tblY, col1W + col2W, rowH * rows.length);
+  // garis vertikal tengah
+  doc.line(tblX + col1W, tblY, tblX + col1W, tblY + rowH * rows.length);
+  // garis horizontal antar baris
+  rows.forEach((_, i) => {
+    if (i > 0) doc.line(tblX, tblY + rowH * i, tblX + col1W + col2W, tblY + rowH * i);
+  });
+
+  rows.forEach((r, i) => {
+    const y = tblY + rowH * i + rowH * 0.65;
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...r.color);
+    doc.text(r.label, tblX + 2, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(r.ket, tblX + col1W + 2, y);
+  });
+
+  doc.setTextColor(0,0,0);
   return doc;
 };
 
@@ -289,7 +340,7 @@ export default function FilmTab({ settings, outletName }) {
 
       <div className="data-card p-3">
         <div className="table-toolbar">
-          <input className="form-control search-input" placeholder="Cari judul film" value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} />
+          <input className="form-control search-input" placeholder="Cari judul, format, rumah produksi..." value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} />
           <select className="form-select" style={{ width: 160 }} value={filterStatus} onChange={e => { setFilterStatus(e.target.value); setPage(1); }}>
             <option value="">Semua Status</option>
             {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
@@ -299,7 +350,7 @@ export default function FilmTab({ settings, outletName }) {
           <button className="btn btn-outline-secondary btn-sm" onClick={() => setShowTrash(true)}><i className="bi bi-trash2 me-1" />Sampah</button>
           <button className="btn btn-outline-dark btn-sm" onClick={handlePreviewPDF}><i className="bi bi-eye me-1" />Preview PDF</button>
           <button className="btn btn-outline-secondary btn-sm" onClick={handleDownloadPDF}><i className="bi bi-download me-1" />Download PDF</button>
-          <button className="btn btn-outline-info btn-sm" onClick={() => setShowServerUpdate(true)}><i className="bi bi-hdd me-1" />Sisa Server</button>
+          <button className="btn btn-outline-info btn-sm" onClick={() => setShowServerUpdate(true)}><i className="bi bi-hdd me-1" />Update Server</button>
         </div>
 
         {/* Legend */}
