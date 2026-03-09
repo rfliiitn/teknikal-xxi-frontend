@@ -350,8 +350,8 @@ export default function FilmTab({ settings, outletName }) {
             <option value="">Semua Status</option>
             {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
           </select>
-          <button className="btn btn-sm btn-outline-secondary ms-auto" onClick={() => setShowActions(v => !v)} title="Aksi">
-            <i className={`bi ${showActions ? 'bi-x' : 'bi-three-dots-vertical'}`} />
+          <button className="btn btn-sm btn-outline-secondary" onClick={() => setShowActions(v => !v)}>
+            <i className={`bi ${showActions ? 'bi-x' : 'bi-list'} me-1`} />MENU
           </button>
         </div>
         {showActions && (

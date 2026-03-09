@@ -90,8 +90,8 @@ export default function MaintenanceTab({ settings, outletName }) {
       <div className="data-card p-3">
         <div className="table-toolbar">
           <input className="form-control search-input" placeholder="Cari maintenance..." value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} />
-          <button className="btn btn-sm btn-outline-secondary ms-auto" onClick={() => setShowActions(v => !v)} title="Aksi">
-            <i className={`bi ${showActions ? 'bi-x' : 'bi-three-dots-vertical'}`} />
+          <button className="btn btn-sm btn-outline-secondary" onClick={() => setShowActions(v => !v)}>
+            <i className={`bi ${showActions ? 'bi-x' : 'bi-list'} me-1`} />MENU
           </button>
         </div>
         {showActions && (
