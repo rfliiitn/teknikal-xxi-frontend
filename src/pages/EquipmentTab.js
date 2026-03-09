@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import API from '../utils/api';
 import TrashModal from '../components/TrashModal';
 
-const EMPTY_FORM = { studio: '', projector: '', server: '', kapasitas_server: '', satuan_kapasitas: 'TB' };
+const EMPTY_FORM = { studio: '', projector: '', server: '', kapasitas_server: '', satuan_kapasitas: 'MB' };
 
 export default function EquipmentTab({ outletName }) {
   const [items, setItems] = useState([]);
@@ -36,12 +36,9 @@ export default function EquipmentTab({ outletName }) {
   const openAdd = () => { setEditItem(null); setForm(EMPTY_FORM); setFormErr({}); setShowForm(true); };
   const openEdit = (item) => {
     setEditItem(item);
-    // parse satuan dari kapasitas_server jika ada
     let kapasitas = item.kapasitas_server || '';
-    let satuan = 'TB';
-    if (kapasitas.endsWith('MB')) { satuan = 'MB'; kapasitas = kapasitas.replace('MB', '').trim(); }
-    else if (kapasitas.endsWith('TB')) { satuan = 'TB'; kapasitas = kapasitas.replace('TB', '').trim(); }
-    setForm({ ...item, kapasitas_server: kapasitas, satuan_kapasitas: satuan });
+    if (kapasitas.toUpperCase().endsWith('MB')) kapasitas = kapasitas.replace(/MB/i, '').trim();
+    setForm({ ...item, kapasitas_server: kapasitas, satuan_kapasitas: 'MB' });
     setFormErr({});
     setShowForm(true);
   };
@@ -60,7 +57,7 @@ export default function EquipmentTab({ outletName }) {
     setSaving(true);
     const payload = {
       ...form,
-      kapasitas_server: form.kapasitas_server ? `${form.kapasitas_server} ${form.satuan_kapasitas}` : ''
+      kapasitas_server: form.kapasitas_server ? `${form.kapasitas_server} MB` : ''
     };
     delete payload.satuan_kapasitas;
     try {
@@ -164,14 +161,11 @@ export default function EquipmentTab({ outletName }) {
                       <input
                         type="number"
                         className="form-control"
-                        placeholder="Contoh: 2"
+                        placeholder="Contoh: 8000"
                         value={fc('kapasitas_server')}
                         onChange={e => setFc('kapasitas_server', e.target.value)}
                       />
-                      <select className="form-select" style={{ maxWidth: 80 }} value={fc('satuan_kapasitas')} onChange={e => setFc('satuan_kapasitas', e.target.value)}>
-                        <option value="TB">TB</option>
-                        <option value="MB">MB</option>
-                      </select>
+                      <span className="input-group-text">MB</span>
                     </div>
                   </div>
                 </div>

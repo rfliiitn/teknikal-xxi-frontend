@@ -7,6 +7,7 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -54,15 +55,20 @@ export default function LoginPage() {
 
         <div className="mb-4">
           <label className="form-label fw-semibold small">Password</label>
-          <input
-            className="form-control"
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={form.password}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-          />
+          <div className="input-group">
+            <input
+              className="form-control"
+              type={showPassword ? 'text' : 'password'}
+              name="password"
+              placeholder="Password"
+              value={form.password}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+            />
+            <button className="btn btn-outline-secondary" type="button" onClick={() => setShowPassword(v => !v)}>
+              <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`} />
+            </button>
+          </div>
         </div>
 
         <button className="btn btn-primary w-100 fw-semibold" onClick={handleSubmit} disabled={loading}>

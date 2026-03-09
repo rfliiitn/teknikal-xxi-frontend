@@ -11,7 +11,10 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingOutlet, setLoadingOutlet] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showKonfirmasi, setShowKonfirmasi] = useState(false);
   const searchRef = useRef(null);
+  const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
   const fetchOutletList = async (q = '') => {
@@ -33,7 +36,9 @@ export default function RegisterPage() {
   }, [search]);
 
   useEffect(() => {
-    const handleClick = (e) => { if (searchRef.current && !searchRef.current.contains(e.target)) setShowDropdown(false); };
+    const handleClick = (e) => {
+      if (searchRef.current && !searchRef.current.contains(e.target)) setShowDropdown(false);
+    };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
@@ -82,13 +87,17 @@ export default function RegisterPage() {
 
         <div className="row g-3">
           {/* Cari & Pilih Outlet */}
-          <div className="col-12" ref={searchRef}>
+          <div className="col-12" ref={searchRef} style={{ position: 'relative' }}>
             <label className="form-label fw-semibold small">Cari & Pilih Outlet *</label>
             <input
               className="form-control"
               placeholder="Ketik nama outlet untuk mencari..."
               value={search}
-              onChange={e => { setSearch(e.target.value); setShowDropdown(true); if (!e.target.value) setForm(f => ({ ...f, nama_outlet: '' })); }}
+              onChange={e => {
+                setSearch(e.target.value);
+                setShowDropdown(true);
+                if (!e.target.value) setForm(f => ({ ...f, nama_outlet: '' }));
+              }}
               onFocus={() => setShowDropdown(true)}
             />
             {form.nama_outlet && (
@@ -97,9 +106,23 @@ export default function RegisterPage() {
               </div>
             )}
             {showDropdown && (
-              <div className="border rounded mt-1 bg-white shadow-sm" style={{ maxHeight: 220, overflowY: 'auto', position: 'absolute', zIndex: 1000, width: 'calc(100% - 3rem)' }}>
+              <div
+                ref={dropdownRef}
+                className="border rounded mt-1 bg-white shadow"
+                style={{
+                  maxHeight: 220,
+                  overflowY: 'auto',
+                  position: 'absolute',
+                  zIndex: 1050,
+                  left: 0,
+                  right: 0,
+                  top: '100%'
+                }}
+              >
                 {loadingOutlet ? (
-                  <div className="p-2 text-center text-muted small"><span className="spinner-border spinner-border-sm me-1" />Mencari...</div>
+                  <div className="p-2 text-center text-muted small">
+                    <span className="spinner-border spinner-border-sm me-1" />Mencari...
+                  </div>
                 ) : outletList.length === 0 ? (
                   <div className="p-2 text-center text-muted small">Outlet tidak ditemukan</div>
                 ) : outletList.map(o => (
@@ -112,8 +135,6 @@ export default function RegisterPage() {
                       opacity: o.sudah_terdaftar ? 0.6 : 1,
                       borderBottom: '1px solid #f0f0f0'
                     }}
-                    onMouseEnter={e => { if (!o.sudah_terdaftar) e.currentTarget.style.background = '#f5f5f5'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = form.nama_outlet === o.nama_outlet ? '#e8f0fe' : 'white'; }}
                     onClick={() => selectOutlet(o)}
                   >
                     <div className="small fw-semibold" style={o.sudah_terdaftar ? { textDecoration: 'line-through', color: '#999' } : {}}>
@@ -142,12 +163,36 @@ export default function RegisterPage() {
 
           <div className="col-md-6">
             <label className="form-label fw-semibold small">Password *</label>
-            <input className="form-control" type="password" name="password" placeholder="Min. 6 karakter" value={form.password} onChange={handleChange} />
+            <div className="input-group">
+              <input
+                className="form-control"
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                placeholder="Min. 6 karakter"
+                value={form.password}
+                onChange={handleChange}
+              />
+              <button className="btn btn-outline-secondary" type="button" onClick={() => setShowPassword(v => !v)}>
+                <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`} />
+              </button>
+            </div>
           </div>
 
           <div className="col-md-6">
             <label className="form-label fw-semibold small">Konfirmasi *</label>
-            <input className="form-control" type="password" name="konfirmasi" placeholder="Ulangi password" value={form.konfirmasi} onChange={handleChange} />
+            <div className="input-group">
+              <input
+                className="form-control"
+                type={showKonfirmasi ? 'text' : 'password'}
+                name="konfirmasi"
+                placeholder="Ulangi password"
+                value={form.konfirmasi}
+                onChange={handleChange}
+              />
+              <button className="btn btn-outline-secondary" type="button" onClick={() => setShowKonfirmasi(v => !v)}>
+                <i className={`bi ${showKonfirmasi ? 'bi-eye-slash' : 'bi-eye'}`} />
+              </button>
+            </div>
           </div>
         </div>
 

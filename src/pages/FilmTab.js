@@ -197,7 +197,7 @@ export default function FilmTab({ settings, outletName }) {
   const [pdfUrl, setPdfUrl] = useState('');
   const [showServerUpdate, setShowServerUpdate] = useState(false);
   const [equipments, setEquipments] = useState([]);
-  const [serverUpdate, setServerUpdate] = useState({ equipment_id: '', sisa_kapasitas: '', satuan: 'TB' });
+  const [serverUpdate, setServerUpdate] = useState({ equipment_id: '', sisa_kapasitas: '' });
   const PER_PAGE = 20;
 
   const fetchFilms = async () => {
@@ -279,12 +279,12 @@ export default function FilmTab({ settings, outletName }) {
 
   const handleUpdateServer = async () => {
     if (!serverUpdate.equipment_id) return alert('Pilih server terlebih dahulu');
-    const kapasitas = serverUpdate.sisa_kapasitas ? `${serverUpdate.sisa_kapasitas} ${serverUpdate.satuan}` : '';
+    const kapasitas = serverUpdate.sisa_kapasitas ? `${serverUpdate.sisa_kapasitas} MB` : '';
     try {
       await API.put(`/equipment/${serverUpdate.equipment_id}`, { kapasitas_server: kapasitas });
       fetchEquipments();
       setShowServerUpdate(false);
-      setServerUpdate({ equipment_id: '', sisa_kapasitas: '', satuan: 'TB' });
+      setServerUpdate({ equipment_id: '', sisa_kapasitas: '' });
       alert('Kapasitas server berhasil diupdate');
     } catch { alert('Gagal update server'); }
   };
@@ -472,8 +472,18 @@ export default function FilmTab({ settings, outletName }) {
                 <h5 className="modal-title"><i className="bi bi-file-pdf me-2" />Preview PDF — Laporan Data Film</h5>
                 <button className="btn-close" onClick={() => { setShowPdfPreview(false); setPdfUrl(''); }} />
               </div>
-              <div className="modal-body p-0" style={{ height: '75vh' }}>
-                <iframe src={pdfUrl} width="100%" height="100%" title="PDF Preview" style={{ border: 'none' }} />
+              <div className="modal-body">
+                <div className="d-none d-md-block" style={{ height: '70vh' }}>
+                  <iframe src={pdfUrl} width="100%" height="100%" title="PDF Preview" style={{ border: 'none', borderRadius: 4 }} />
+                </div>
+                <div className="d-md-none text-center py-4">
+                  <i className="bi bi-file-pdf text-danger" style={{ fontSize: '3rem' }} />
+                  <div className="mt-3 mb-1 fw-semibold">Preview tidak tersedia di mobile</div>
+                  <div className="text-muted small mb-4">Tap tombol di bawah untuk membuka atau download PDF</div>
+                  <a href={pdfUrl} target="_blank" rel="noreferrer" className="btn btn-outline-primary me-2">
+                    <i className="bi bi-box-arrow-up-right me-1" />Buka PDF
+                  </a>
+                </div>
               </div>
               <div className="modal-footer">
                 <button className="btn btn-secondary" onClick={() => { setShowPdfPreview(false); setPdfUrl(''); }}>Tutup</button>
@@ -503,10 +513,8 @@ export default function FilmTab({ settings, outletName }) {
                       <select className="form-select" value={serverUpdate.equipment_id} onChange={e => {
                         const eq = equipments.find(x => x.id === e.target.value);
                         let kapasitas = eq?.kapasitas_server || '';
-                        let satuan = 'TB';
-                        if (kapasitas.endsWith('MB')) { satuan = 'MB'; kapasitas = kapasitas.replace('MB', '').trim(); }
-                        else if (kapasitas.endsWith('TB')) { satuan = 'TB'; kapasitas = kapasitas.replace('TB', '').trim(); }
-                        setServerUpdate({ equipment_id: e.target.value, sisa_kapasitas: kapasitas, satuan });
+                        if (kapasitas.toUpperCase().endsWith('MB')) kapasitas = kapasitas.replace(/MB/i, '').trim();
+                        setServerUpdate({ equipment_id: e.target.value, sisa_kapasitas: kapasitas });
                       }}>
                         <option value="">-- Pilih server --</option>
                         {equipments.map(eq => (
