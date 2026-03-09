@@ -99,7 +99,7 @@ export default function MainLayout() {
         {activeTab === 'setting' && <SettingTab settings={settings} onSaved={fetchSettings} />}
       </div>
 
-      <footer className="text-center py-2" style={{ fontSize: '0.75rem', color: '#6b7280', background: '#d1d5db', borderTop: '1px solid #c5c9d0' }}>
+      <footer className="text-center py-2" style={{ fontSize: '0.75rem', color: '#94a3b8', background: '#f0f2f5', borderTop: '1px solid #e2e8f0' }}>
         &copy; {new Date().getFullYear()} Rafli Trinugroho. All rights reserved.
       </footer>
     </div>
