@@ -289,7 +289,7 @@ export default function FilmTab({ settings, outletName }) {
 
       <div className="data-card p-3">
         <div className="table-toolbar">
-          <input className="form-control search-input" placeholder="Cari judul, format, rumah produksi..." value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} />
+          <input className="form-control search-input" placeholder="Cari judul film" value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} />
           <select className="form-select" style={{ width: 160 }} value={filterStatus} onChange={e => { setFilterStatus(e.target.value); setPage(1); }}>
             <option value="">Semua Status</option>
             {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
@@ -299,7 +299,7 @@ export default function FilmTab({ settings, outletName }) {
           <button className="btn btn-outline-secondary btn-sm" onClick={() => setShowTrash(true)}><i className="bi bi-trash2 me-1" />Sampah</button>
           <button className="btn btn-outline-dark btn-sm" onClick={handlePreviewPDF}><i className="bi bi-eye me-1" />Preview PDF</button>
           <button className="btn btn-outline-secondary btn-sm" onClick={handleDownloadPDF}><i className="bi bi-download me-1" />Download PDF</button>
-          <button className="btn btn-outline-info btn-sm" onClick={() => setShowServerUpdate(true)}><i className="bi bi-hdd me-1" />Update Server</button>
+          <button className="btn btn-outline-info btn-sm" onClick={() => setShowServerUpdate(true)}><i className="bi bi-hdd me-1" />Sisa Server</button>
         </div>
 
         {/* Legend */}

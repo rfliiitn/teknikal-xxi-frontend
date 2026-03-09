@@ -46,7 +46,7 @@ export default function LoginPage() {
             className="form-control"
             type="text"
             name="email"
-            placeholder="nama@cinema21.net atau username"
+            placeholder="email atau username"
             value={form.email}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
@@ -83,7 +83,7 @@ export default function LoginPage() {
 
         <div className="text-center mt-2">
           <small className="text-muted" style={{ fontSize: '0.75rem' }}>
-            Gunakan email @cinema21.net atau username
+            Gunakan email atau username
           </small>
         </div>
       </div>
