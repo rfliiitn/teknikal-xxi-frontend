@@ -15,6 +15,7 @@ export default function OrderTab({ settings, outletName }) {
   const toast = useToast();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showActions, setShowActions] = useState(false);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [selected, setSelected] = useState([]);
@@ -104,12 +105,19 @@ export default function OrderTab({ settings, outletName }) {
             <option value="">Semua Status</option>
             {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
           </select>
-          <button className="btn btn-primary btn-sm" onClick={openAdd}><i className="bi bi-plus-lg me-1" />Tambah</button>
-          <button className="btn btn-danger btn-sm" onClick={handleBulkDelete} disabled={!selected.length}><i className="bi bi-trash me-1" />Hapus ({selected.length})</button>
-          <button className="btn btn-outline-secondary btn-sm" onClick={() => setShowTrash(true)}><i className="bi bi-trash2 me-1" />Sampah</button>
-          <button className="btn btn-outline-dark btn-sm" onClick={() => previewOrderPDF(filtered, settings, outletName)}><i className="bi bi-eye me-1" />Preview PDF</button>
-          <button className="btn btn-outline-secondary btn-sm" onClick={() => generateOrderPDF(filtered, settings, outletName)}><i className="bi bi-download me-1" />Download PDF</button>
+          <button className="btn btn-sm btn-outline-secondary ms-auto" onClick={() => setShowActions(v => !v)} title="Aksi">
+            <i className={`bi ${showActions ? 'bi-x' : 'bi-three-dots-vertical'}`} />
+          </button>
         </div>
+        {showActions && (
+          <div className="toolbar-actions">
+            <button className="btn btn-primary btn-sm" onClick={openAdd}><i className="bi bi-plus-lg me-1" />Tambah</button>
+            <button className="btn btn-danger btn-sm" onClick={handleBulkDelete} disabled={!selected.length}><i className="bi bi-trash me-1" />Hapus ({selected.length})</button>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => setShowTrash(true)}><i className="bi bi-trash2 me-1" />Sampah</button>
+            <button className="btn btn-outline-dark btn-sm" onClick={() => previewOrderPDF(filtered, settings, outletName)}><i className="bi bi-eye me-1" />Preview PDF</button>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => generateOrderPDF(filtered, settings, outletName)}><i className="bi bi-download me-1" />Download PDF</button>
+          </div>
+        )}
 
         {loading ? <div className="text-center py-4"><div className="spinner-border text-primary" /></div> : (
           <div className="table-responsive">
