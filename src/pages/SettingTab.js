@@ -3,7 +3,6 @@ import API from '../utils/api';
 
 export default function SettingTab({ settings, onSaved }) {
   const [form, setForm] = useState({
-    nama_outlet: '',
     yang_membuat_nama: '',
     yang_membuat_divisi: '',
     yang_mengetahui_nama: '',
@@ -16,7 +15,6 @@ export default function SettingTab({ settings, onSaved }) {
   useEffect(() => {
     if (settings) {
       setForm({
-        nama_outlet: settings.nama_outlet || '',
         yang_membuat_nama: settings.yang_membuat_nama || '',
         yang_membuat_divisi: settings.yang_membuat_divisi || '',
         yang_mengetahui_nama: settings.yang_mengetahui_nama || '',
@@ -28,9 +26,7 @@ export default function SettingTab({ settings, onSaved }) {
   const setFc = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   const handleSave = async () => {
-    setSaving(true);
-    setSuccess('');
-    setError('');
+    setSaving(true); setSuccess(''); setError('');
     try {
       await API.put('/setting', form);
       setSuccess('Pengaturan berhasil disimpan');
@@ -51,11 +47,10 @@ export default function SettingTab({ settings, onSaved }) {
         {success && <div className="alert alert-success py-2 small">{success}</div>}
         {error && <div className="alert alert-danger py-2 small">{error}</div>}
 
-        <h6 className="mb-3 text-muted text-uppercase" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>Identitas Outlet</h6>
-        <div className="mb-4">
-          <label className="form-label small fw-semibold">Nama Outlet</label>
-          <input className="form-control" value={form.nama_outlet} onChange={e => setFc('nama_outlet', e.target.value)} placeholder="Nama outlet cinema" />
-          <div className="form-text">Nama ini akan tampil di navbar dan di dokumen PDF</div>
+        <div className="mb-3 p-3 rounded" style={{ background: '#f8f9fa', border: '1px solid #dee2e6' }}>
+          <div className="small text-muted mb-1 fw-semibold">Nama Outlet</div>
+          <div className="fw-semibold">{settings?.nama_outlet || '-'}</div>
+          <div className="form-text">Nama outlet diatur oleh admin dan tidak bisa diubah di sini.</div>
         </div>
 
         <hr />
@@ -111,8 +106,7 @@ export default function SettingTab({ settings, onSaved }) {
 
         <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
           {saving ? <span className="spinner-border spinner-border-sm me-2" /> : null}
-          <i className="bi bi-check-lg me-1" />
-          Simpan Pengaturan
+          <i className="bi bi-check-lg me-1" />Simpan Pengaturan
         </button>
       </div>
     </div>

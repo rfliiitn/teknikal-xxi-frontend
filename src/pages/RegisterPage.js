@@ -1,52 +1,64 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import API from '../utils/api';
 
 export default function RegisterPage() {
   const [form, setForm] = useState({ email: '', password: '', konfirmasi: '', nama_outlet: '', nama_lengkap: '' });
   const [outletList, setOutletList] = useState([]);
+  const [search, setSearch] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-  const [loadingOutlet, setLoadingOutlet] = useState(true);
+  const [loadingOutlet, setLoadingOutlet] = useState(false);
+  const searchRef = useRef(null);
   const navigate = useNavigate();
 
+  const fetchOutletList = async (q = '') => {
+    setLoadingOutlet(true);
+    try {
+      const res = await API.get(`/auth/outlet-list${q ? `?search=${encodeURIComponent(q)}` : ''}`);
+      setOutletList(res.data);
+    } catch {
+      setOutletList([]);
+    }
+    setLoadingOutlet(false);
+  };
+
+  useEffect(() => { fetchOutletList(); }, []);
+
   useEffect(() => {
-    const fetchOutletList = async () => {
-      try {
-        const res = await API.get('/auth/outlet-list');
-        setOutletList(res.data);
-      } catch {
-        setOutletList([]);
-      }
-      setLoadingOutlet(false);
-    };
-    fetchOutletList();
+    const timer = setTimeout(() => { if (showDropdown) fetchOutletList(search); }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
+    const handleClick = (e) => { if (searchRef.current && !searchRef.current.contains(e.target)) setShowDropdown(false); };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = async () => {
-    setError('');
-    setSuccess('');
+  const selectOutlet = (o) => {
+    if (o.sudah_terdaftar) return;
+    setForm(f => ({ ...f, nama_outlet: o.nama_outlet }));
+    setSearch(o.nama_outlet);
+    setShowDropdown(false);
+  };
 
+  const handleSubmit = async () => {
+    setError(''); setSuccess('');
     if (!form.email || !form.password || !form.nama_outlet || !form.nama_lengkap) return setError('Semua field wajib diisi');
     if (!form.email.endsWith('@cinema21.net')) return setError('Hanya email @cinema21.net yang diizinkan');
     if (form.password !== form.konfirmasi) return setError('Password dan konfirmasi tidak cocok');
     if (form.password.length < 6) return setError('Password minimal 6 karakter');
 
-    const selectedOutlet = outletList.find(o => o.nama_outlet === form.nama_outlet);
-    if (selectedOutlet?.sudah_terdaftar) {
-      return setError(`Outlet "${form.nama_outlet}" sudah terdaftar. Hubungi admin jika ini milik Anda.`);
-    }
-
     setLoading(true);
     try {
       await API.post('/auth/register', {
-        email: form.email,
-        password: form.password,
-        nama_outlet: form.nama_outlet,
-        nama_lengkap: form.nama_lengkap
+        email: form.email, password: form.password,
+        nama_outlet: form.nama_outlet, nama_lengkap: form.nama_lengkap
       });
       setSuccess('Registrasi berhasil! Silakan login.');
       setTimeout(() => navigate('/login'), 2000);
@@ -69,40 +81,58 @@ export default function RegisterPage() {
         {success && <div className="alert alert-success py-2 small">{success}</div>}
 
         <div className="row g-3">
-          {/* Pilih Outlet */}
-          <div className="col-12">
-            <label className="form-label fw-semibold small">Pilih Outlet *</label>
-            {loadingOutlet ? (
-              <div className="text-muted small"><span className="spinner-border spinner-border-sm me-2" />Memuat daftar outlet...</div>
-            ) : outletList.length === 0 ? (
-              <div className="alert alert-warning py-2 small mb-0">
-                Belum ada outlet terdaftar. Hubungi admin.
+          {/* Cari & Pilih Outlet */}
+          <div className="col-12" ref={searchRef}>
+            <label className="form-label fw-semibold small">Cari & Pilih Outlet *</label>
+            <input
+              className="form-control"
+              placeholder="Ketik nama outlet untuk mencari..."
+              value={search}
+              onChange={e => { setSearch(e.target.value); setShowDropdown(true); if (!e.target.value) setForm(f => ({ ...f, nama_outlet: '' })); }}
+              onFocus={() => setShowDropdown(true)}
+            />
+            {form.nama_outlet && (
+              <div className="mt-1 small text-success">
+                <i className="bi bi-check-circle me-1" />Terpilih: <strong>{form.nama_outlet}</strong>
               </div>
-            ) : (
-              <select
-                className="form-select"
-                name="nama_outlet"
-                value={form.nama_outlet}
-                onChange={handleChange}
-              >
-                <option value="">-- Pilih nama outlet --</option>
-                {outletList.map(o => (
-                  <option
+            )}
+            {showDropdown && (
+              <div className="border rounded mt-1 bg-white shadow-sm" style={{ maxHeight: 220, overflowY: 'auto', position: 'absolute', zIndex: 1000, width: 'calc(100% - 3rem)' }}>
+                {loadingOutlet ? (
+                  <div className="p-2 text-center text-muted small"><span className="spinner-border spinner-border-sm me-1" />Mencari...</div>
+                ) : outletList.length === 0 ? (
+                  <div className="p-2 text-center text-muted small">Outlet tidak ditemukan</div>
+                ) : outletList.map(o => (
+                  <div
                     key={o.nama_outlet}
-                    value={o.nama_outlet}
-                    disabled={o.sudah_terdaftar}
-                    style={o.sudah_terdaftar ? { textDecoration: 'line-through', color: '#aaa' } : {}}
+                    className="px-3 py-2"
+                    style={{
+                      cursor: o.sudah_terdaftar ? 'not-allowed' : 'pointer',
+                      background: form.nama_outlet === o.nama_outlet ? '#e8f0fe' : 'white',
+                      opacity: o.sudah_terdaftar ? 0.6 : 1,
+                      borderBottom: '1px solid #f0f0f0'
+                    }}
+                    onMouseEnter={e => { if (!o.sudah_terdaftar) e.currentTarget.style.background = '#f5f5f5'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = form.nama_outlet === o.nama_outlet ? '#e8f0fe' : 'white'; }}
+                    onClick={() => selectOutlet(o)}
                   >
-                    {o.nama_outlet}{o.sudah_terdaftar ? ' — Sudah Terdaftar' : ''}
-                  </option>
+                    <div className="small fw-semibold" style={o.sudah_terdaftar ? { textDecoration: 'line-through', color: '#999' } : {}}>
+                      {o.nama_outlet}
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: '#888' }}>
+                      {o.kota}
+                      {o.sudah_terdaftar && <span className="ms-2 badge bg-danger" style={{ fontSize: '0.65rem' }}>Sudah Terdaftar</span>}
+                    </div>
+                  </div>
                 ))}
-              </select>
+              </div>
             )}
           </div>
 
           <div className="col-12">
-            <label className="form-label fw-semibold small">Nama Lengkap *</label>
-            <input className="form-control" name="nama_lengkap" placeholder="Nama lengkap Anda" value={form.nama_lengkap} onChange={handleChange} />
+            <label className="form-label fw-semibold small">Username *</label>
+            <input className="form-control" name="nama_lengkap" placeholder="Username untuk login" value={form.nama_lengkap} onChange={handleChange} />
+            <div className="form-text">Username ini dipakai untuk login selain email</div>
           </div>
 
           <div className="col-12">
@@ -121,14 +151,13 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        <button className="btn btn-primary w-100 fw-semibold mt-4" onClick={handleSubmit} disabled={loading || loadingOutlet}>
+        <button className="btn btn-primary w-100 fw-semibold mt-4" onClick={handleSubmit} disabled={loading}>
           {loading ? <span className="spinner-border spinner-border-sm me-2" /> : null}
           Daftar
         </button>
 
         <div className="text-center mt-3 small text-muted">
-          Sudah punya akun?{' '}
-          <Link to="/login" className="text-decoration-none fw-semibold">Login di sini</Link>
+          Sudah punya akun? <Link to="/login" className="text-decoration-none fw-semibold">Login di sini</Link>
         </div>
       </div>
     </div>

@@ -14,8 +14,7 @@ export default function LoginPage() {
 
   const handleSubmit = async () => {
     setError('');
-    if (!form.email || !form.password) return setError('Email dan password wajib diisi');
-
+    if (!form.email || !form.password) return setError('Email/username dan password wajib diisi');
     setLoading(true);
     try {
       const res = await API.post('/auth/login', form);
@@ -41,12 +40,12 @@ export default function LoginPage() {
         {error && <div className="alert alert-danger py-2 small">{error}</div>}
 
         <div className="mb-3">
-          <label className="form-label fw-semibold small">Email</label>
+          <label className="form-label fw-semibold small">Email atau Username</label>
           <input
             className="form-control"
-            type="email"
+            type="text"
             name="email"
-            placeholder="nama@cinema21.net"
+            placeholder="nama@cinema21.net atau username"
             value={form.email}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
@@ -66,11 +65,7 @@ export default function LoginPage() {
           />
         </div>
 
-        <button
-          className="btn btn-primary w-100 fw-semibold"
-          onClick={handleSubmit}
-          disabled={loading}
-        >
+        <button className="btn btn-primary w-100 fw-semibold" onClick={handleSubmit} disabled={loading}>
           {loading ? <span className="spinner-border spinner-border-sm me-2" /> : null}
           Masuk
         </button>
@@ -82,7 +77,7 @@ export default function LoginPage() {
 
         <div className="text-center mt-2">
           <small className="text-muted" style={{ fontSize: '0.75rem' }}>
-            Hanya email @cinema21.net yang diizinkan
+            Gunakan email @cinema21.net atau username
           </small>
         </div>
       </div>
