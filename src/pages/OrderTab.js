@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import API from '../utils/api';
 import TrashModal from '../components/TrashModal';
-import { generateOrderPDF } from '../utils/pdfUtils';
+import { generateOrderPDF, previewOrderPDF } from '../utils/pdfUtils';
+import { useToast } from '../context/ToastContext';
 
 const STATUS_OPTIONS = ['Sudah Diterima', 'Belum Diterima'];
 
@@ -11,6 +12,7 @@ const EMPTY_FORM = {
 };
 
 export default function OrderTab({ settings, outletName }) {
+  const toast = useToast();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
@@ -61,20 +63,21 @@ export default function OrderTab({ settings, outletName }) {
     try {
       if (editItem) await API.put(`/order/${editItem.id}`, form);
       else await API.post('/order', form);
+      toast.success(editItem ? 'Data berhasil diperbarui' : 'Data berhasil ditambahkan');
       fetch(); closeForm();
-    } catch { alert('Gagal menyimpan'); }
+    } catch { toast.error('Gagal menyimpan data'); }
     setSaving(false);
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm('Pindahkan ke tempat sampah?')) return;
-    try { await API.delete(`/order/${id}`); fetch(); } catch { alert('Gagal menghapus'); }
+    try { await API.delete(`/order/${id}`); fetch(); } catch { toast.error('Gagal menghapus data'); }
   };
 
   const handleBulkDelete = async () => {
     if (!selected.length) return;
     if (!window.confirm(`Hapus ${selected.length} data?`)) return;
-    try { await API.post('/order/bulk-delete', { ids: selected }); setSelected([]); fetch(); } catch {}
+    try { await API.post('/order/bulk-delete', { ids: selected }); toast.success(`${selected.length} data dihapus`); setSelected([]); fetch(); } catch { toast.error('Gagal menghapus'); }
   };
 
   const toggleSelect = (id) => setSelected(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id]);
@@ -104,7 +107,8 @@ export default function OrderTab({ settings, outletName }) {
           <button className="btn btn-primary btn-sm" onClick={openAdd}><i className="bi bi-plus-lg me-1" />Tambah</button>
           <button className="btn btn-danger btn-sm" onClick={handleBulkDelete} disabled={!selected.length}><i className="bi bi-trash me-1" />Hapus ({selected.length})</button>
           <button className="btn btn-outline-secondary btn-sm" onClick={() => setShowTrash(true)}><i className="bi bi-trash2 me-1" />Sampah</button>
-          <button className="btn btn-outline-dark btn-sm" onClick={() => generateOrderPDF(filtered, settings, outletName)}><i className="bi bi-file-pdf me-1" />PDF</button>
+          <button className="btn btn-outline-dark btn-sm" onClick={() => previewOrderPDF(filtered, settings, outletName)}><i className="bi bi-eye me-1" />Preview PDF</button>
+          <button className="btn btn-outline-secondary btn-sm" onClick={() => generateOrderPDF(filtered, settings, outletName)}><i className="bi bi-download me-1" />Download PDF</button>
         </div>
 
         {loading ? <div className="text-center py-4"><div className="spinner-border text-primary" /></div> : (

@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import API from '../utils/api';
 import TrashModal from '../components/TrashModal';
+import { useToast } from '../context/ToastContext';
 
 const EMPTY_FORM = { studio: '', projector: '', server: '', kapasitas_server: '' };
 
 export default function EquipmentTab({ outletName }) {
+  const toast = useToast();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
@@ -64,20 +66,21 @@ export default function EquipmentTab({ outletName }) {
     try {
       if (editItem) await API.put(`/equipment/${editItem.id}`, payload);
       else await API.post('/equipment', payload);
+      toast.success(editItem ? 'Equipment berhasil diperbarui' : 'Equipment berhasil ditambahkan');
       fetch(); closeForm();
-    } catch { alert('Gagal menyimpan'); }
+    } catch { toast.error('Gagal menyimpan data'); }
     setSaving(false);
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm('Pindahkan ke tempat sampah?')) return;
-    try { await API.delete(`/equipment/${id}`); fetch(); } catch { alert('Gagal'); }
+    try { await API.delete(`/equipment/${id}`); toast.success('Equipment dipindahkan ke sampah'); fetch(); } catch { toast.error('Gagal menghapus'); }
   };
 
   const handleBulkDelete = async () => {
     if (!selected.length) return;
     if (!window.confirm(`Hapus ${selected.length} data?`)) return;
-    try { await API.post('/equipment/bulk-delete', { ids: selected }); setSelected([]); fetch(); } catch {}
+    try { await API.post('/equipment/bulk-delete', { ids: selected }); toast.success(`${selected.length} equipment dihapus`); setSelected([]); fetch(); } catch { toast.error('Gagal menghapus'); }
   };
 
   const toggleSelect = (id) => setSelected(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id]);

@@ -50,9 +50,8 @@ export default function MainLayout() {
             {isAdmin && <span className="outlet-name ms-2">| Admin</span>}
           </span>
 
-          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-            style={{ borderColor: 'rgba(255,255,255,0.4)' }}>
-            <span className="navbar-toggler-icon" style={{ filter: 'invert(1)' }} />
+          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span className="navbar-toggler-icon" />
           </button>
 
           <div className="collapse navbar-collapse" id="navbarNav">
@@ -73,15 +72,15 @@ export default function MainLayout() {
 
             <div className="d-flex align-items-center gap-2">
               {isAdmin && (
-                <span className="badge" style={{ background: '#c9a84c', color: '#1e3a5f' }}>
+                <span className="badge" style={{ background: '#dbeafe', color: '#1d4ed8', fontWeight: 600 }}>
                   <i className="bi bi-shield-fill me-1" />Admin
                 </span>
               )}
-              <span className="text-white small">
+              <span className="small" style={{ color: 'var(--text-muted)' }}>
                 <i className="bi bi-person-circle me-1" />
                 {user?.nama_lengkap || user?.email}
               </span>
-              <button className="btn btn-sm btn-outline-light" onClick={logout}>
+              <button className="btn btn-sm btn-outline-secondary" onClick={logout}>
                 <i className="bi bi-box-arrow-right me-1" />
                 Keluar
               </button>

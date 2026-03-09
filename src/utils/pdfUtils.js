@@ -1,146 +1,126 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-export const generateFilmPDF = (films, settings, outletName) => {
-  const doc = new jsPDF({ orientation: 'landscape' });
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.text('DATA FILM', doc.internal.pageSize.width / 2, 15, { align: 'center' });
-  doc.setFontSize(11);
-  doc.text(`Outlet: ${outletName || '-'}`, doc.internal.pageSize.width / 2, 22, { align: 'center' });
-
-  autoTable(doc, {
-    startY: 28,
-    head: [['No', 'Judul Film', 'Status Tayang', 'Format Film', 'Status KDM']],
-    body: films.map((f, i) => [
-      i + 1,
-      f.judul_film,
-      f.status_tayang,
-      f.format_film,
-      f.status_kdm
-    ]),
-    styles: { fontSize: 9, cellPadding: 3 },
-    headStyles: { fillColor: [30, 58, 95], textColor: 255 },
-    didParseCell: (data) => {
-      if (data.section === 'body') {
-        const row = films[data.row.index];
-        if (row?.status_tayang === 'Sedang Tayang') {
-          data.cell.styles.fillColor = [198, 239, 206];
-        } else if (row?.status_tayang === 'Sudah Tayang') {
-          data.cell.styles.fillColor = [255, 199, 206];
-        }
-      }
-    }
-  });
-
-  const finalY = doc.lastAutoTable.finalY + 20;
-  const pageWidth = doc.internal.pageSize.width;
-
-  // Signature section
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-
-  const leftX = 40;
-  const rightX = pageWidth - 80;
-
-  doc.text('Yang Membuat,', leftX, finalY);
-  doc.text('Yang Mengetahui,', rightX, finalY);
-
-  doc.text('\n\n\n', leftX, finalY + 5);
-
-  const ymNama = settings?.yang_membuat_nama || '.....................';
-  const ymDiv = settings?.yang_membuat_divisi || '.....................';
-  const ykNama = settings?.yang_mengetahui_nama || '.....................';
-  const ykDiv = settings?.yang_mengetahui_divisi || '.....................';
-
-  doc.text(ymNama, leftX, finalY + 30);
-  doc.text(ymDiv, leftX, finalY + 36);
-
-  doc.text(ykNama, rightX, finalY + 30);
-  doc.text(ykDiv, rightX, finalY + 36);
-
-  doc.save(`data-film-${outletName || 'outlet'}.pdf`);
+const formatPeriode = () => {
+  const now = new Date();
+  return now.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }).toUpperCase();
 };
 
-export const generateOrderPDF = (orders, settings, outletName) => {
-  const doc = new jsPDF({ orientation: 'landscape' });
+const addSignatureAndSave = (doc, settings, outletName, filename, mode = 'save') => {
+  const finalY = doc.lastAutoTable.finalY + 20;
+  const pageWidth = doc.internal.pageSize.width;
+  const leftX = 20;
+  const rightX = pageWidth - 65;
+
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text('YANG MEMBUAT', leftX, finalY);
+  doc.text('MENGETAHUI', rightX, finalY);
+
+  doc.line(leftX, finalY + 22, leftX + 50, finalY + 22);
+  doc.line(rightX, finalY + 22, rightX + 50, finalY + 22);
 
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.text('DATA ORDER BARANG', doc.internal.pageSize.width / 2, 15, { align: 'center' });
-  doc.setFontSize(11);
-  doc.text(`Outlet: ${outletName || '-'}`, doc.internal.pageSize.width / 2, 22, { align: 'center' });
+  doc.text((settings?.yang_membuat_nama || '').toUpperCase(), leftX, finalY + 27);
+  doc.setFont('helvetica', 'normal');
+  doc.text(settings?.yang_membuat_divisi || '', leftX, finalY + 32);
+
+  doc.setFont('helvetica', 'bold');
+  doc.text((settings?.yang_mengetahui_nama || '').toUpperCase(), rightX, finalY + 27);
+  doc.setFont('helvetica', 'normal');
+  doc.text(settings?.yang_mengetahui_divisi || '', rightX, finalY + 32);
+
+  if (mode === 'preview') {
+    window.open(doc.output('bloburl'), '_blank');
+  } else {
+    doc.save(`${filename}-${(outletName || 'outlet').replace(/ /g, '_')}.pdf`);
+  }
+};
+
+// ── ORDER PDF ──
+const buildOrderDoc = (orders, settings, outletName) => {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const pageWidth = doc.internal.pageSize.width;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13);
+  doc.text('LAPORAN DATA ORDER BARANG', pageWidth / 2, 14, { align: 'center' });
+  doc.setLineWidth(0.5);
+  doc.line(14, 17, pageWidth - 14, 17);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.text(`Nama Outlet : ${(outletName || '-').toUpperCase()}`, 14, 23);
+  doc.text(`Periode     : ${formatPeriode()}`, 14, 29);
 
   autoTable(doc, {
-    startY: 28,
-    head: [['No', 'Nama Barang', 'Jumlah', 'Tgl Order', 'Tgl Diterima', 'Status', 'Keterangan']],
+    startY: 33,
+    head: [['NO', 'NAMA BARANG', 'JUMLAH', 'TGL ORDER', 'TGL DITERIMA', 'STATUS', 'KETERANGAN']],
     body: orders.map((o, i) => [
       i + 1,
-      o.nama_barang,
+      o.nama_barang?.toUpperCase() || '',
       o.jumlah_barang,
       o.tanggal_order,
       o.tanggal_diterima || '-',
-      o.status_barang,
+      o.status_barang?.toUpperCase() || '',
       o.keterangan || '-'
     ]),
-    styles: { fontSize: 9, cellPadding: 3 },
-    headStyles: { fillColor: [30, 58, 95], textColor: 255 },
+    styles: { fontSize: 8.5, cellPadding: 2.5, lineColor: [0,0,0], lineWidth: 0.3 },
+    headStyles: { fillColor: [255,255,255], textColor: [0,0,0], fontStyle: 'bold', lineWidth: 0.3, fontSize: 8 },
+    columnStyles: { 1: { cellWidth: 50 }, 6: { cellWidth: 35 } },
     didParseCell: (data) => {
       if (data.section === 'body') {
         const row = orders[data.row.index];
-        if (row?.status_barang === 'Sudah Diterima') {
-          data.cell.styles.fillColor = [198, 239, 206];
-        } else {
-          data.cell.styles.fillColor = [255, 199, 206];
-        }
+        data.cell.styles.textColor = row?.status_barang === 'Sudah Diterima' ? [0,128,0] : [200,0,0];
       }
-    }
+    },
+    margin: { left: 14, right: 14 }
   });
 
-  addSignature(doc, settings, outletName, 'data-order');
+  return doc;
+};
+
+export const generateOrderPDF = (orders, settings, outletName) => {
+  addSignatureAndSave(buildOrderDoc(orders, settings, outletName), settings, outletName, 'LAPORAN_ORDER', 'save');
+};
+
+export const previewOrderPDF = (orders, settings, outletName) => {
+  addSignatureAndSave(buildOrderDoc(orders, settings, outletName), settings, outletName, 'LAPORAN_ORDER', 'preview');
+};
+
+// ── MAINTENANCE PDF ──
+const buildMaintenanceDoc = (items, settings, outletName) => {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const pageWidth = doc.internal.pageSize.width;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13);
+  doc.text('LAPORAN DATA MAINTENANCE', pageWidth / 2, 14, { align: 'center' });
+  doc.setLineWidth(0.5);
+  doc.line(14, 17, pageWidth - 14, 17);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.text(`Nama Outlet : ${(outletName || '-').toUpperCase()}`, 14, 23);
+  doc.text(`Periode     : ${formatPeriode()}`, 14, 29);
+
+  autoTable(doc, {
+    startY: 33,
+    head: [['NO', 'TANGGAL', 'MAINTENANCE', 'KETERANGAN']],
+    body: items.map((m, i) => [i + 1, m.tanggal, m.maintenance?.toUpperCase() || '', m.keterangan || '-']),
+    styles: { fontSize: 9, cellPadding: 2.5, lineColor: [0,0,0], lineWidth: 0.3, textColor: [0,0,0] },
+    headStyles: { fillColor: [255,255,255], textColor: [0,0,0], fontStyle: 'bold', lineWidth: 0.3 },
+    columnStyles: { 2: { cellWidth: 60 }, 3: { cellWidth: 70 } },
+    margin: { left: 14, right: 14 }
+  });
+
+  return doc;
 };
 
 export const generateMaintenancePDF = (items, settings, outletName) => {
-  const doc = new jsPDF();
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.text('DATA MAINTENANCE', doc.internal.pageSize.width / 2, 15, { align: 'center' });
-  doc.setFontSize(11);
-  doc.text(`Outlet: ${outletName || '-'}`, doc.internal.pageSize.width / 2, 22, { align: 'center' });
-
-  autoTable(doc, {
-    startY: 28,
-    head: [['No', 'Tanggal', 'Maintenance', 'Keterangan']],
-    body: items.map((m, i) => [i + 1, m.tanggal, m.maintenance, m.keterangan]),
-    styles: { fontSize: 9, cellPadding: 3 },
-    headStyles: { fillColor: [30, 58, 95], textColor: 255 },
-  });
-
-  addSignature(doc, settings, outletName, 'data-maintenance');
+  addSignatureAndSave(buildMaintenanceDoc(items, settings, outletName), settings, outletName, 'LAPORAN_MAINTENANCE', 'save');
 };
 
-const addSignature = (doc, settings, outletName, filename) => {
-  const finalY = doc.lastAutoTable.finalY + 20;
-  const pageWidth = doc.internal.pageSize.width;
-  const leftX = 30;
-  const rightX = pageWidth - 70;
-
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Yang Membuat,', leftX, finalY);
-  doc.text('Yang Mengetahui,', rightX, finalY);
-
-  const ymNama = settings?.yang_membuat_nama || '.....................';
-  const ymDiv = settings?.yang_membuat_divisi || '.....................';
-  const ykNama = settings?.yang_mengetahui_nama || '.....................';
-  const ykDiv = settings?.yang_mengetahui_divisi || '.....................';
-
-  doc.text(ymNama, leftX, finalY + 30);
-  doc.text(ymDiv, leftX, finalY + 36);
-  doc.text(ykNama, rightX, finalY + 30);
-  doc.text(ykDiv, rightX, finalY + 36);
-
-  doc.save(`${filename}-${outletName || 'outlet'}.pdf`);
+export const previewMaintenancePDF = (items, settings, outletName) => {
+  addSignatureAndSave(buildMaintenanceDoc(items, settings, outletName), settings, outletName, 'LAPORAN_MAINTENANCE', 'preview');
 };

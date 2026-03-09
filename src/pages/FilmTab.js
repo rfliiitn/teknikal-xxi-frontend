@@ -3,6 +3,7 @@ import API from '../utils/api';
 import TrashModal from '../components/TrashModal';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { useToast } from '../context/ToastContext';
 
 const STATUS_OPTIONS = ['Belum Tayang', 'Sedang Tayang', 'Sudah Tayang'];
 
@@ -160,6 +161,7 @@ const buildPDF = (films, outletName, settings, equipments) => {
 
 
 export default function FilmTab({ settings, outletName }) {
+  const toast = useToast();
   const [films, setFilms] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
@@ -223,20 +225,21 @@ export default function FilmTab({ settings, outletName }) {
     try {
       if (editItem) await API.put(`/film/${editItem.id}`, form);
       else await API.post('/film', form);
+      toast.success(editItem ? 'Data film berhasil diperbarui' : 'Film berhasil ditambahkan');
       fetchFilms(); closeForm();
-    } catch (err) { alert(err.response?.data?.error || 'Gagal menyimpan'); }
+    } catch (err) { toast.error(err.response?.data?.error || 'Gagal menyimpan data'); }
     setSaving(false);
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm('Pindahkan ke tempat sampah?')) return;
-    try { await API.delete(`/film/${id}`); fetchFilms(); } catch { alert('Gagal'); }
+    try { await API.delete(`/film/${id}`); toast.success('Film dipindahkan ke sampah'); fetchFilms(); } catch { toast.error('Gagal menghapus data'); }
   };
 
   const handleBulkDelete = async () => {
     if (!selected.length) return;
     if (!window.confirm(`Hapus ${selected.length} data terpilih?`)) return;
-    try { await API.post('/film/bulk-delete', { ids: selected }); setSelected([]); fetchFilms(); } catch { alert('Gagal'); }
+    try { await API.post('/film/bulk-delete', { ids: selected }); setSelected([]); fetchFilms(); } catch { toast.error('Gagal menghapus data'); }
   };
 
   const toggleSelect = (id) => setSelected(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id]);
@@ -260,7 +263,7 @@ export default function FilmTab({ settings, outletName }) {
   };
 
   const handleUpdateServer = async () => {
-    if (!serverUpdate.equipment_id) return alert('Pilih server terlebih dahulu');
+    if (!serverUpdate.equipment_id) return toast.warning('Pilih server terlebih dahulu');
     const sisa = serverUpdate.sisa_kapasitas ? `${serverUpdate.sisa_kapasitas} GB` : '';
     try {
       await API.put(`/equipment/${serverUpdate.equipment_id}`, { sisa_kapasitas: sisa });
@@ -268,7 +271,7 @@ export default function FilmTab({ settings, outletName }) {
       setShowServerUpdate(false);
       setServerUpdate({ equipment_id: '', sisa_kapasitas: '' });
       alert('Sisa kapasitas server berhasil diupdate');
-    } catch { alert('Gagal update server'); }
+    } catch { toast.error('Gagal update kapasitas server'); }
   };
 
   const TRASH_COLS = [
