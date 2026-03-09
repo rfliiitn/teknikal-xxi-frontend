@@ -38,13 +38,11 @@ const textColor = (status) => {
 const buildPDF = (films, outletName, settings, equipments) => {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageWidth = doc.internal.pageSize.width;
-  const pageHeight = doc.internal.pageSize.height;
 
   // ── HEADER ──
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(13);
   doc.text('LAPORAN DATA FILM DI SERVER', pageWidth / 2, 14, { align: 'center' });
-
   doc.setDrawColor(0);
   doc.setLineWidth(0.5);
   doc.line(14, 17, pageWidth - 14, 17);
@@ -60,18 +58,9 @@ const buildPDF = (films, outletName, settings, equipments) => {
     head: [[
       { content: 'NO', styles: { halign: 'center' } },
       { content: 'JUDUL FILM', styles: { halign: 'center' } },
-      {
-        content: 'KETERANGAN\n(Belum / Sedang / Sudah)',
-        styles: { halign: 'center' }
-      },
-      {
-        content: 'FORMAT FILM\n2D / 3D / ATMOS',
-        styles: { halign: 'center' }
-      },
-      {
-        content: 'KDM\n(ada / tidak)',
-        styles: { halign: 'center' }
-      }
+      { content: 'KETERANGAN\n(Belum / Sedang / Sudah)', styles: { halign: 'center' } },
+      { content: 'FORMAT FILM\n2D / 3D / ATMOS', styles: { halign: 'center' } },
+      { content: 'KDM\n(ada / tidak)', styles: { halign: 'center' } }
     ]],
     body: films.map((f, i) => [
       i + 1,
@@ -80,21 +69,8 @@ const buildPDF = (films, outletName, settings, equipments) => {
       f.format_film?.toUpperCase() || '',
       f.status_kdm?.toUpperCase() || ''
     ]),
-    styles: {
-      fontSize: 9,
-      cellPadding: 2.5,
-      lineColor: [0, 0, 0],
-      lineWidth: 0.3,
-      textColor: [0, 0, 0]
-    },
-    headStyles: {
-      fillColor: [255, 255, 255],
-      textColor: [0, 0, 0],
-      fontStyle: 'bold',
-      lineWidth: 0.3,
-      lineColor: [0, 0, 0],
-      fontSize: 8.5
-    },
+    styles: { fontSize: 9, cellPadding: 2.5, lineColor: [0, 0, 0], lineWidth: 0.3, textColor: [0, 0, 0] },
+    headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.3, lineColor: [0, 0, 0], fontSize: 8.5 },
     columnStyles: {
       0: { cellWidth: 10, halign: 'center' },
       1: { cellWidth: 70 },
@@ -105,49 +81,51 @@ const buildPDF = (films, outletName, settings, equipments) => {
     didParseCell: (data) => {
       if (data.section === 'body') {
         const film = films[data.row.index];
-        const color = textColor(film?.status_tayang);
-        data.cell.styles.textColor = color;
+        data.cell.styles.textColor = textColor(film?.status_tayang);
       }
     },
     margin: { left: 14, right: 14 }
   });
 
   const finalY = doc.lastAutoTable.finalY;
+  const pageHeight = doc.internal.pageSize.height;
 
-  // ── NOTE KAPASITAS SERVER ──
+  // ── NOTE KAPASITAS SERVER (di tengah, antara tabel dan tanda tangan) ──
   const noteY = finalY + 8;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
-  doc.text('NOTE :', 14, noteY);
-  doc.text('SISA KAPASITAS PENYIMPANAN SERVER', 14, noteY + 5);
+  doc.text('NOTE :', pageWidth / 2, noteY, { align: 'center' });
+  doc.text('SISA KAPASITAS PENYIMPANAN SERVER', pageWidth / 2, noteY + 5, { align: 'center' });
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
-  let lineOffset = noteY + 10;
 
+  const serverLines = [];
   if (equipments && equipments.length > 0) {
     equipments.forEach(eq => {
-      const label = `- ${(eq.server || 'SERVER').toUpperCase()} STD ${eq.studio}`;
-      const kapasitas = eq.kapasitas_server || '-';
-      doc.text(`${label} : ${kapasitas}`, 14, lineOffset);
-      lineOffset += 5;
+      serverLines.push(`- ${(eq.server || 'SERVER').toUpperCase()} STD ${eq.studio} : ${eq.sisa_kapasitas || '-'}`);
     });
   } else {
-    doc.text('- Tidak ada data server', 14, lineOffset);
-    lineOffset += 5;
+    serverLines.push('- Tidak ada data server');
   }
 
+  // Hitung lebar terlebar untuk center
+  serverLines.forEach((line, idx) => {
+    doc.text(line, pageWidth / 2, noteY + 10 + (idx * 5), { align: 'center' });
+  });
+
+  const noteEndY = noteY + 10 + (serverLines.length * 5);
+
   // ── TANDA TANGAN ──
-  const ttY = Math.max(lineOffset + 10, noteY + 30);
-  const leftX = 14;
-  const rightX = pageWidth - 60;
+  const ttY = noteEndY + 10;
+  const leftX = 20;
+  const rightX = pageWidth - 65;
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
   doc.text('YANG MEMBUAT', leftX, ttY);
   doc.text('MENGETAHUI', rightX, ttY);
 
-  // Garis tanda tangan
   doc.line(leftX, ttY + 22, leftX + 50, ttY + 22);
   doc.line(rightX, ttY + 22, rightX + 50, ttY + 22);
 
@@ -162,23 +140,24 @@ const buildPDF = (films, outletName, settings, equipments) => {
   doc.setFont('helvetica', 'normal');
   doc.text(settings?.yang_mengetahui_divisi || '', rightX, ttY + 32);
 
-  // ── KETERANGAN WARNA ── (pojok kanan bawah, di samping note)
-  const ketY = noteY;
-  const ketX = pageWidth - 70;
+  // ── KETERANGAN WARNA (pojok kiri bawah) ──
+  const ketY = pageHeight - 22;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8.5);
-  doc.text('KETERANGAN :', ketX, ketY);
+  doc.setTextColor(0, 0, 0);
+  doc.text('KETERANGAN :', 14, ketY);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(0, 0, 0);
-  doc.text('FONT HITAM   BELUM TAYANG', ketX, ketY + 5);
+  doc.text('FONT HITAM    BELUM TAYANG', 14, ketY + 5);
   doc.setTextColor(0, 128, 0);
-  doc.text('FONT HIJAU   SEDANG TAYANG', ketX, ketY + 10);
+  doc.text('FONT HIJAU    SEDANG TAYANG', 14, ketY + 10);
   doc.setTextColor(255, 0, 0);
-  doc.text('FONT MERAH  SUDAH TAYANG', ketX, ketY + 15);
+  doc.text('FONT MERAH  SUDAH TAYANG', 14, ketY + 15);
   doc.setTextColor(0, 0, 0);
 
   return doc;
 };
+
 
 export default function FilmTab({ settings, outletName }) {
   const [films, setFilms] = useState([]);
@@ -210,12 +189,18 @@ export default function FilmTab({ settings, outletName }) {
 
   useEffect(() => { fetchFilms(); fetchEquipments(); }, []);
 
-  const filtered = useMemo(() => films.filter(f => {
+  const STATUS_ORDER = { 'Belum Tayang': 0, 'Sedang Tayang': 1, 'Sudah Tayang': 2 };
+
+  const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    const matchSearch = !q || f.judul_film?.toLowerCase().includes(q) || f.format_film?.toLowerCase().includes(q) || f.rumah_produksi?.toLowerCase().includes(q);
-    const matchStatus = !filterStatus || f.status_tayang === filterStatus;
-    return matchSearch && matchStatus;
-  }), [films, search, filterStatus]);
+    return films
+      .filter(f => {
+        const matchSearch = !q || f.judul_film?.toLowerCase().includes(q) || f.format_film?.toLowerCase().includes(q) || f.rumah_produksi?.toLowerCase().includes(q);
+        const matchStatus = !filterStatus || f.status_tayang === filterStatus;
+        return matchSearch && matchStatus;
+      })
+      .sort((a, b) => (STATUS_ORDER[a.status_tayang] ?? 0) - (STATUS_ORDER[b.status_tayang] ?? 0));
+  }, [films, search, filterStatus]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
   const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
@@ -276,13 +261,13 @@ export default function FilmTab({ settings, outletName }) {
 
   const handleUpdateServer = async () => {
     if (!serverUpdate.equipment_id) return alert('Pilih server terlebih dahulu');
-    const kapasitas = serverUpdate.sisa_kapasitas ? `${serverUpdate.sisa_kapasitas} MB` : '';
+    const sisa = serverUpdate.sisa_kapasitas ? `${serverUpdate.sisa_kapasitas} GB` : '';
     try {
-      await API.put(`/equipment/${serverUpdate.equipment_id}`, { kapasitas_server: kapasitas });
+      await API.put(`/equipment/${serverUpdate.equipment_id}`, { sisa_kapasitas: sisa });
       fetchEquipments();
       setShowServerUpdate(false);
       setServerUpdate({ equipment_id: '', sisa_kapasitas: '' });
-      alert('Kapasitas server berhasil diupdate');
+      alert('Sisa kapasitas server berhasil diupdate');
     } catch { alert('Gagal update server'); }
   };
 
@@ -481,14 +466,14 @@ export default function FilmTab({ settings, outletName }) {
                       <label className="form-label small fw-semibold">Pilih Server / Studio</label>
                       <select className="form-select" value={serverUpdate.equipment_id} onChange={e => {
                         const eq = equipments.find(x => x.id === e.target.value);
-                        let kapasitas = eq?.kapasitas_server || '';
-                        if (kapasitas.toUpperCase().endsWith('MB')) kapasitas = kapasitas.replace(/MB/i, '').trim();
-                        setServerUpdate({ equipment_id: e.target.value, sisa_kapasitas: kapasitas });
+                        let sisa = eq?.sisa_kapasitas || '';
+                        if (sisa.toUpperCase().endsWith('GB')) sisa = sisa.replace(/GB/i, '').trim();
+                        setServerUpdate({ equipment_id: e.target.value, sisa_kapasitas: sisa });
                       }}>
                         <option value="">-- Pilih server --</option>
                         {equipments.map(eq => (
                           <option key={eq.id} value={eq.id}>
-                            Studio {eq.studio} — {eq.server} ({eq.kapasitas_server || 'belum diset'})
+                            Studio {eq.studio} — {eq.server} | Total: {eq.kapasitas_server || '-'} | Sisa: {eq.sisa_kapasitas || 'belum diset'}
                           </option>
                         ))}
                       </select>
@@ -503,7 +488,7 @@ export default function FilmTab({ settings, outletName }) {
                           value={serverUpdate.sisa_kapasitas}
                           onChange={e => setServerUpdate(s => ({ ...s, sisa_kapasitas: e.target.value }))}
                         />
-                        <span className="input-group-text">MB</span>
+                        <span className="input-group-text">GB</span>
                       </div>
                     </div>
                   </div>

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import API from '../utils/api';
 import TrashModal from '../components/TrashModal';
 
-const EMPTY_FORM = { studio: '', projector: '', server: '', kapasitas_server: '', satuan_kapasitas: 'MB' };
+const EMPTY_FORM = { studio: '', projector: '', server: '', kapasitas_server: '' };
 
 export default function EquipmentTab({ outletName }) {
   const [items, setItems] = useState([]);
@@ -37,8 +37,8 @@ export default function EquipmentTab({ outletName }) {
   const openEdit = (item) => {
     setEditItem(item);
     let kapasitas = item.kapasitas_server || '';
-    if (kapasitas.toUpperCase().endsWith('MB')) kapasitas = kapasitas.replace(/MB/i, '').trim();
-    setForm({ ...item, kapasitas_server: kapasitas, satuan_kapasitas: 'MB' });
+    if (kapasitas.toUpperCase().endsWith('GB')) kapasitas = kapasitas.replace(/GB/i, '').trim();
+    setForm({ ...item, kapasitas_server: kapasitas });
     setFormErr({});
     setShowForm(true);
   };
@@ -56,10 +56,11 @@ export default function EquipmentTab({ outletName }) {
     if (!validate()) return;
     setSaving(true);
     const payload = {
-      ...form,
-      kapasitas_server: form.kapasitas_server ? `${form.kapasitas_server} MB` : ''
+      studio: form.studio,
+      projector: form.projector,
+      server: form.server,
+      kapasitas_server: form.kapasitas_server ? `${form.kapasitas_server} GB` : ''
     };
-    delete payload.satuan_kapasitas;
     try {
       if (editItem) await API.put(`/equipment/${editItem.id}`, payload);
       else await API.post('/equipment', payload);
@@ -112,12 +113,13 @@ export default function EquipmentTab({ outletName }) {
                   <th>Projector</th>
                   <th>Server</th>
                   <th>Kapasitas Server</th>
+                  <th>Sisa Kapasitas</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
-                  <tr><td colSpan={7} className="text-center text-muted py-3">Tidak ada data</td></tr>
+                  <tr><td colSpan={8} className="text-center text-muted py-3">Tidak ada data</td></tr>
                 ) : filtered.map((e, i) => (
                   <tr key={e.id}>
                     <td><input type="checkbox" className="form-check-input" checked={selected.includes(e.id)} onChange={() => toggleSelect(e.id)} /></td>
@@ -126,6 +128,7 @@ export default function EquipmentTab({ outletName }) {
                     <td>{e.projector}</td>
                     <td>{e.server}</td>
                     <td>{e.kapasitas_server || '-'}</td>
+                    <td>{e.sisa_kapasitas || '-'}</td>
                     <td style={{ whiteSpace: 'nowrap' }}>
                       <button className="btn btn-sm btn-warning me-1" onClick={() => openEdit(e)}><i className="bi bi-pencil" /></button>
                       <button className="btn btn-sm btn-danger" onClick={() => handleDelete(e.id)}><i className="bi bi-trash" /></button>
@@ -161,12 +164,13 @@ export default function EquipmentTab({ outletName }) {
                       <input
                         type="number"
                         className="form-control"
-                        placeholder="Contoh: 8000"
+                        placeholder="Contoh: 8"
                         value={fc('kapasitas_server')}
                         onChange={e => setFc('kapasitas_server', e.target.value)}
                       />
-                      <span className="input-group-text">MB</span>
+                      <span className="input-group-text">GB</span>
                     </div>
+                    <div className="form-text">Kapasitas total server, tidak berubah kecuali diedit di sini</div>
                   </div>
                 </div>
               </div>
