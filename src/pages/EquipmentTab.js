@@ -236,7 +236,11 @@ function ServerTab() {
               <div className="row g-3">
                 <div className="col-12">
                   <label className="form-label small fw-semibold">Type Server *</label>
-                  <input className={cls('type_server')} placeholder="ims3000 atau AAM library" value={fc('type_server')} onChange={e => setFc('type_server', e.target.value)} />
+                  <input className={cls('type_server')} placeholder="ims3000 atau AAM library"
+                    value={fc('type_server')} onChange={e => setFc('type_server', e.target.value)}
+                    readOnly={!!editItem?.is_aam}
+                    style={editItem?.is_aam ? {background:'var(--surface-2)',cursor:'not-allowed'} : {}} />
+                  {editItem?.is_aam && <div className="form-text">AAM Library tidak dapat diubah namanya</div>}
                   {formErr.type_server && <div className="invalid-feedback">{formErr.type_server}</div>}
                 </div>
                 <div className="col-md-6">

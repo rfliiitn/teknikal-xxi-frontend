@@ -153,10 +153,23 @@ const buildPDF = (films, outletName, settings, servers) => {
   const serverLines = [];
   if (servers && servers.length > 0) {
     servers.forEach(sv => {
-      const sisa = (sv.kapasitas_server && sv.size_terpakai !== null && sv.size_terpakai !== '')
-        ? `${(parseFloat(sv.kapasitas_server) - parseFloat(sv.size_terpakai)).toFixed(1)} GB`
-        : (sv.size_terpakai !== null && sv.size_terpakai !== '' ? `${sv.size_terpakai} GB` : '-');
-      serverLines.push({ label: sv.type_server.toUpperCase(), val: sisa });
+      const kap = parseFloat(sv.kapasitas_server) || 0;
+      const terpakai = parseFloat(sv.size_terpakai) || 0;
+      const sisa = kap > 0 ? kap - terpakai : null;
+      const persen = kap > 0 ? Math.round((sisa / kap) * 100) : null;
+      const sisaStr = sisa !== null
+        ? `${sisa.toFixed(0)} GB${persen !== null ? ` (${persen}%)` : ''}`
+        : '-';
+      // AAM Library tanpa prefix STD, server lain cari studio_number dari relasi
+      let label;
+      if (sv.is_aam) {
+        label = sv.type_server.toUpperCase();
+      } else {
+        // Cari studio yang pakai server ini
+        const studioNum = sv.studios?.[0]?.studio_number ?? sv.studio_number ?? null;
+        label = studioNum ? `STD ${studioNum} - ${sv.type_server.toUpperCase()}` : sv.type_server.toUpperCase();
+      }
+      serverLines.push({ label, val: sisaStr });
     });
   } else {
     serverLines.push({ label: 'Tidak ada data server', val: '' });
@@ -255,7 +268,7 @@ export default function FilmTab({ settings, outletName }) {
   };
 
   const fetchEquipments = async () => {
-    try { const res = await API.get('/server'); setServers(res.data); } catch {}
+    try { const res = await API.get('/server/in-studio'); setServers(res.data); } catch {}
   };
 
   useEffect(() => { fetchFilms(); fetchEquipments(); }, []);
@@ -564,7 +577,7 @@ export default function FilmTab({ settings, outletName }) {
                         <option value="">-- Pilih server --</option>
                         {servers.map(sv => (
                           <option key={sv.id} value={sv.id}>
-                            {sv.type_server.toUpperCase()} | Kapasitas: {sv.kapasitas_server ? sv.kapasitas_server + ' GB' : '-'} | Terpakai: {sv.size_terpakai !== null && sv.size_terpakai !== '' ? sv.size_terpakai + ' GB' : 'belum diset'}
+                            {sv.is_aam ? sv.type_server.toUpperCase() : (sv.studios?.[0]?.studio_number ? `STD ${sv.studios[0].studio_number} - ${sv.type_server.toUpperCase()}` : sv.type_server.toUpperCase())} | Kapasitas: {sv.kapasitas_server ? sv.kapasitas_server + ' GB' : '-'} | Terpakai: {sv.size_terpakai !== null && sv.size_terpakai !== '' ? sv.size_terpakai + ' GB' : 'belum diset'}
                           </option>
                         ))}
                       </select>
