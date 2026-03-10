@@ -472,8 +472,13 @@ export default function FilmTab({ settings, outletName }) {
                     {fErr('status_kdm')}
                   </div>
                   <div className="col-md-4">
-                    <label className="form-label small fw-semibold">Tanggal Tayang</label>
-                    <input type="date" className="form-control" value={fc('tanggal_tayang')} onChange={e => setFc('tanggal_tayang', e.target.value)} />
+                    <label className="form-label small fw-semibold">Tanggal Tayang <span className="text-muted fw-normal">(opsional)</span></label>
+                    <div className="input-group">
+                      <input type="date" className="form-control" value={fc('tanggal_tayang')} onChange={e => setFc('tanggal_tayang', e.target.value)} />
+                      {fc('tanggal_tayang') && (
+                        <button type="button" className="btn btn-outline-secondary" onClick={() => setFc('tanggal_tayang', '')} title="Hapus tanggal"><i className="bi bi-x" /></button>
+                      )}
+                    </div>
                   </div>
 
                   <div className="col-12"><hr className="my-1" /><div className="small text-muted">Field tambahan (opsional)</div></div>
