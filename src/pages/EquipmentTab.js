@@ -246,6 +246,10 @@ function ServerTab() {
                     <span className="input-group-text">GB</span>
                   </div>
                 </div>
+                <div className="col-md-6">
+                  <label className="form-label small fw-semibold">Total Unit</label>
+                  <input type="number" className="form-control" placeholder="Contoh: 1" value={fc('total_unit')} onChange={e => setFc('total_unit', e.target.value)} />
+                </div>
 
                 <div className="col-12">
                   <label className="form-label small fw-semibold">Keterangan</label>
@@ -294,7 +298,7 @@ function AcTab() {
     return !q ? items : items.filter(a => a.merk_ac?.toLowerCase().includes(q) || a.type_ac?.toLowerCase().includes(q));
   }, [items, search]);
 
-  const openAdd = () => { setEditItem(null); setForm({ type_ac: '', merk_ac: '', total_pk: '', keterangan: '' }); setFormErr({}); setShowForm(true); };
+  const openAdd = () => { setEditItem(null); setForm({ type_ac: '', merk_ac: '', total_pk: '', total_unit: '', keterangan: '' }); setFormErr({}); setShowForm(true); };
   const openEdit = (item) => { setEditItem(item); setForm({ ...item }); setFormErr({}); setShowForm(true); };
   const closeForm = () => { setShowForm(false); setEditItem(null); };
   const validate = () => {
@@ -596,7 +600,7 @@ function StudioTab() {
                           <input type="checkbox" className="form-check-input" id={`ac-${a.id}`}
                             checked={form.ac_ids.includes(a.id)} onChange={() => toggleAc(a.id)} />
                           <label className="form-check-label" htmlFor={`ac-${a.id}`} style={{ textTransform: 'uppercase', fontSize: '0.85rem' }}>
-                            {a.merk_ac} ({a.type_ac})
+                            {a.merk_ac}{(() => { const d = [a.type_ac, a.total_pk ? a.total_pk + ' PK' : null].filter(Boolean).join(' | '); return d ? ` (${d})` : ''; })()}
                           </label>
                         </div>
                       ))}
