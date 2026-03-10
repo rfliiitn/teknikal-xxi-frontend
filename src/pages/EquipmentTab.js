@@ -488,7 +488,7 @@ function StudioTab() {
   const getServerLabel = (id) => servers.find(s => s.id === id)?.type_server || '-';
   const getAcLabels = (ids) => {
     if (!ids || ids.length === 0) return '-';
-    return ids.map(id => { const a = acList.find(x => x.id === id); return a ? `${a.merk_ac}${a.total_pk ? ' (' + a.total_pk + ' PK)' : ''}` : '?'; }).join(', ');
+    return ids.map(id => { const a = acList.find(x => x.id === id); if (!a) return '?'; const detail = [a.type_ac, a.total_pk ? a.total_pk + ' PK' : null].filter(Boolean).join(' | '); return `${a.merk_ac}${detail ? ' (' + detail + ')' : ''}`; }).join(', ');
   };
 
   const fc = (k) => form[k] ?? '';
