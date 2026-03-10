@@ -9,11 +9,11 @@ import SettingTab from './SettingTab';
 import AdminPage from './AdminPage';
 
 const USER_TABS = [
-  { key: 'film', label: 'Data Film', icon: 'bi-film' },
-  { key: 'maintenance', label: 'Data Maintenance', icon: 'bi-tools' },
-  { key: 'order', label: 'Data Order Barang', icon: 'bi-box-seam' },
-  { key: 'equipment', label: 'Equipment', icon: 'bi-pc-display' },
-  { key: 'setting', label: 'Setting', icon: 'bi-gear' },
+  { key: 'film',        label: 'Data Film',          icon: 'bi-film' },
+  { key: 'maintenance', label: 'Data Maintenance',   icon: 'bi-tools' },
+  { key: 'order',       label: 'Data Order Barang',  icon: 'bi-box-seam' },
+  { key: 'equipment',   label: 'Equipment',          icon: 'bi-pc-display' },
+  { key: 'setting',     label: 'Setting',            icon: 'bi-gear' },
 ];
 
 const ADMIN_TABS = [
@@ -25,12 +25,15 @@ export default function MainLayout() {
   const [activeTab, setActiveTab] = useState(user?.role === 'admin' ? 'admin' : 'film');
   const [navOpen, setNavOpen] = useState(false);
   const [settings, setSettings] = useState(null);
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+    localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+  }, [darkMode]);
 
   const fetchSettings = async () => {
-    try {
-      const res = await API.get('/setting');
-      setSettings(res.data);
-    } catch {}
+    try { const res = await API.get('/setting'); setSettings(res.data); } catch {}
   };
 
   useEffect(() => {
@@ -48,14 +51,14 @@ export default function MainLayout() {
           <span className="navbar-brand">
             Teknikal-XXI
             {!isAdmin && <span className="outlet-name ms-2">| {outletName}</span>}
-            {isAdmin && <span className="outlet-name ms-2">| Admin</span>}
+            {isAdmin  && <span className="outlet-name ms-2">| Admin</span>}
           </span>
 
           <button className="navbar-toggler" type="button" onClick={() => setNavOpen(v => !v)}>
             <span className="navbar-toggler-icon" />
           </button>
 
-          <div className={`navbar-collapse${navOpen ? " show" : ""}`} id="navbarNav">
+          <div className={`navbar-collapse${navOpen ? ' show' : ''}`}>
             <ul className="navbar-nav me-auto ms-3">
               {tabs.map(tab => (
                 <li className="nav-item" key={tab.key}>
@@ -64,14 +67,18 @@ export default function MainLayout() {
                     style={{ textDecoration: 'none' }}
                     onClick={() => { setActiveTab(tab.key); setNavOpen(false); }}
                   >
-                    <i className={`bi ${tab.icon} me-1`} />
-                    {tab.label}
+                    <i className={`bi ${tab.icon} me-1`} />{tab.label}
                   </button>
                 </li>
               ))}
             </ul>
 
             <div className="d-flex align-items-center gap-2">
+              {/* Dark mode toggle */}
+              <button className="dark-toggle" onClick={() => setDarkMode(v => !v)} title={darkMode ? 'Light Mode' : 'Dark Mode'}>
+                {darkMode ? '☀️' : '🌙'}
+              </button>
+
               {isAdmin && (
                 <span className="badge" style={{ background: '#dbeafe', color: '#1d4ed8', fontWeight: 600 }}>
                   <i className="bi bi-shield-fill me-1" />Admin
@@ -82,8 +89,7 @@ export default function MainLayout() {
                 {user?.nama_lengkap || user?.email}
               </span>
               <button className="btn btn-sm btn-outline-secondary" onClick={logout}>
-                <i className="bi bi-box-arrow-right me-1" />
-                Keluar
+                <i className="bi bi-box-arrow-right me-1" />Keluar
               </button>
             </div>
           </div>
@@ -91,15 +97,15 @@ export default function MainLayout() {
       </nav>
 
       <div className="content-area flex-grow-1">
-        {activeTab === 'admin' && <AdminPage />}
-        {activeTab === 'film' && <FilmTab settings={settings} outletName={outletName} />}
-        {activeTab === 'order' && <OrderTab settings={settings} outletName={outletName} />}
-        {activeTab === 'equipment' && <EquipmentTab outletName={outletName} />}
+        {activeTab === 'admin'       && <AdminPage />}
+        {activeTab === 'film'        && <FilmTab settings={settings} outletName={outletName} />}
+        {activeTab === 'order'       && <OrderTab settings={settings} outletName={outletName} />}
+        {activeTab === 'equipment'   && <EquipmentTab outletName={outletName} />}
         {activeTab === 'maintenance' && <MaintenanceTab settings={settings} outletName={outletName} />}
-        {activeTab === 'setting' && <SettingTab settings={settings} onSaved={fetchSettings} />}
+        {activeTab === 'setting'     && <SettingTab settings={settings} onSaved={fetchSettings} />}
       </div>
 
-      <footer className="text-center py-2" style={{ fontSize: '0.75rem', color: '#94a3b8', background: '#f0f2f5', borderTop: '1px solid #e2e8f0' }}>
+      <footer className="app-footer text-center py-2" style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
         &copy; {new Date().getFullYear()} Rafli Trinugroho. All rights reserved.
       </footer>
     </div>
