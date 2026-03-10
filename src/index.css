@@ -297,3 +297,125 @@ tr:hover .action-btn { opacity: 1; }
   from { opacity: 0; transform: translateY(-6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ── BOOTSTRAP 5.3 DARK MODE FINE-TUNING ── */
+[data-bs-theme="dark"] {
+  --bs-body-bg: #0f1117;
+  --bs-body-color: #e2e8f0;
+  --bs-border-color: #2d3148;
+  --bs-secondary-bg: #1a1d27;
+  --bs-tertiary-bg: #22263a;
+  --bs-emphasis-color: #f1f5f9;
+}
+
+[data-bs-theme="dark"] .table {
+  --bs-table-bg: #1a1d27;
+  --bs-table-border-color: #2d3148;
+  --bs-table-striped-bg: #22263a;
+  --bs-table-hover-bg: #22263a;
+  --bs-table-color: #e2e8f0;
+}
+
+[data-bs-theme="dark"] .table thead th {
+  background: #22263a;
+  color: #94a3b8;
+  border-bottom-color: #2d3148;
+}
+
+[data-bs-theme="dark"] .modal-content {
+  --bs-modal-bg: #1a1d27;
+  --bs-modal-border-color: #2d3148;
+  --bs-modal-color: #e2e8f0;
+  background: #1a1d27;
+}
+
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+  background-color: #22263a;
+  border-color: #2d3148;
+  color: #e2e8f0;
+}
+
+[data-bs-theme="dark"] .form-control:focus,
+[data-bs-theme="dark"] .form-select:focus {
+  background-color: #22263a;
+  color: #e2e8f0;
+}
+
+[data-bs-theme="dark"] .input-group-text {
+  background-color: #2d3148;
+  border-color: #2d3148;
+  color: #94a3b8;
+}
+
+[data-bs-theme="dark"] .data-card {
+  background: #1a1d27;
+  border-color: #2d3148;
+}
+
+[data-bs-theme="dark"] .table-responsive {
+  background: #1a1d27;
+}
+
+[data-bs-theme="dark"] .toolbar-actions {
+  background: #22263a;
+  border-color: #2d3148;
+}
+
+[data-bs-theme="dark"] .btn-outline-secondary {
+  border-color: #2d3148;
+  color: #94a3b8;
+}
+[data-bs-theme="dark"] .btn-outline-secondary:hover {
+  background: #22263a;
+  color: #e2e8f0;
+  border-color: #2d3148;
+}
+
+[data-bs-theme="dark"] .pagination .page-link {
+  background: #1a1d27;
+  border-color: #2d3148;
+  color: #60a5fa;
+}
+[data-bs-theme="dark"] .pagination .page-item.disabled .page-link {
+  background: #22263a;
+  color: #475569;
+}
+
+[data-bs-theme="dark"] .app-navbar {
+  background: #1a1d27 !important;
+  border-bottom-color: #2d3148;
+}
+[data-bs-theme="dark"] .navbar-collapse {
+  background: #1a1d27;
+}
+
+[data-bs-theme="dark"] .modal-header {
+  background: #22263a;
+  border-bottom-color: #2d3148;
+}
+[data-bs-theme="dark"] .modal-footer {
+  background: #1a1d27;
+  border-top-color: #2d3148;
+}
+
+[data-bs-theme="dark"] .content-area {
+  background: #0f1117;
+}
+
+[data-bs-theme="dark"] .app-footer {
+  background: #1a1d27;
+  border-top-color: #2d3148;
+  color: #475569 !important;
+}
+
+[data-bs-theme="dark"] .badge.bg-secondary { background-color: #334155 !important; }
+[data-bs-theme="dark"] .text-muted { color: #64748b !important; }
+
+/* Film/Order status row — dark override */
+[data-bs-theme="dark"] .table tbody tr.row-sedang-tayang td { background-color: #052e16 !important; color: #4ade80 !important; }
+[data-bs-theme="dark"] .table tbody tr.row-sudah-tayang td  { background-color: #2d0a0a !important; color: #f87171 !important; }
+[data-bs-theme="dark"] .table tbody tr.row-belum-tayang td  { background-color: #1a1d27 !important; color: #e2e8f0 !important; }
+[data-bs-theme="dark"] .table tbody tr.row-sudah-diterima td { background-color: #052e16 !important; color: #4ade80 !important; }
+[data-bs-theme="dark"] .table tbody tr.row-belum-diterima td { background-color: #2d0a0a !important; color: #f87171 !important; }
+[data-bs-theme="dark"] .table tbody tr:hover td { background-color: #22263a !important; }
