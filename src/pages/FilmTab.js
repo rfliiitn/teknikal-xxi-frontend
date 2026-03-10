@@ -278,9 +278,13 @@ export default function FilmTab({ settings, outletName }) {
   const handleSave = async () => {
     if (!validate()) return;
     setSaving(true);
+    // Konversi field date kosong jadi null agar tidak error di Supabase
+    const payload = { ...form };
+    if (!payload.tanggal_tayang) payload.tanggal_tayang = null;
+    if (!payload.tanggal_upload) payload.tanggal_upload = null;
     try {
-      if (editItem) await API.put(`/film/${editItem.id}`, form);
-      else await API.post('/film', form);
+      if (editItem) await API.put(`/film/${editItem.id}`, payload);
+      else await API.post('/film', payload);
       toast.success(editItem ? 'Data film berhasil diperbarui' : 'Film berhasil ditambahkan');
       fetchFilms(); closeForm();
     } catch (err) { toast.error(err.response?.data?.error || 'Gagal menyimpan data'); }
