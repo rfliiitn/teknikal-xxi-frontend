@@ -75,7 +75,7 @@ function ProjectorTab() {
                 : filtered.map((p, i) => (
                   <tr key={p.id}>
                     <td>{i + 1}</td><td>{p.type_projector}</td><td>{p.type_lensa || '-'}</td>
-                    <td>{p.lamp_projector || '-'}</td><td>{p.total_unit || '-'}</td><td>{p.keterangan || '-'}</td>
+                    <td>{p.lamp_projector || '-'}</td><td>{p.total_unit || '-'}</td><td className="text-start">{p.keterangan || '-'}</td>
                     <td style={{ whiteSpace: 'nowrap' }} className="action-cell">
                       <button className="btn btn-sm btn-warning me-1 action-btn" onClick={() => openEdit(p)}><i className="bi bi-pencil" /></button>
                       <button className="btn btn-sm btn-danger action-btn" onClick={() => handleDelete(p.id)}><i className="bi bi-trash" /></button>
@@ -213,7 +213,7 @@ function ServerTab() {
                     <td>{i + 1}</td><td>{s.type_server}</td>
                     <td>{s.kapasitas_server ? `${s.kapasitas_server} GB` : '-'}</td>
                     <td>{s.total_unit || '-'}</td>
-                    <td>{s.keterangan || '-'}</td>
+                    <td className="text-start">{s.keterangan || '-'}</td>
                     <td style={{ whiteSpace: 'nowrap' }} className="action-cell">
                       <button className="btn btn-sm btn-warning me-1 action-btn" onClick={() => openEdit(s)}><i className="bi bi-pencil" /></button>
                       <button className="btn btn-sm btn-danger action-btn" onClick={() => handleDelete(s.id)}><i className="bi bi-trash" /></button>
@@ -346,7 +346,7 @@ function AcTab() {
                 : filtered.map((a, i) => (
                   <tr key={a.id}>
                     <td>{i + 1}</td><td>{a.type_ac || '-'}</td><td>{a.merk_ac}</td>
-                    <td>{a.total_pk ? `${a.total_pk} PK` : '-'}</td><td>{a.total_unit || '-'}</td><td>{a.keterangan || '-'}</td>
+                    <td>{a.total_pk ? `${a.total_pk} PK` : '-'}</td><td>{a.total_unit || '-'}</td><td className="text-start">{a.keterangan || '-'}</td>
                     <td style={{ whiteSpace: 'nowrap' }} className="action-cell">
                       <button className="btn btn-sm btn-warning me-1 action-btn" onClick={() => openEdit(a)}><i className="bi bi-pencil" /></button>
                       <button className="btn btn-sm btn-danger action-btn" onClick={() => handleDelete(a.id)}><i className="bi bi-trash" /></button>
@@ -531,7 +531,7 @@ function StudioTab() {
                     <td>{s.ukuran_layar ? `${s.ukuran_layar}m` : '-'}</td>
                     <td>{s.type_layar || '-'}</td>
                     <td>{getAcLabels(s.ac_ids)}</td>
-                    <td>{s.keterangan || '-'}</td>
+                    <td className="text-start">{s.keterangan || '-'}</td>
                     <td style={{ whiteSpace: 'nowrap' }} className="action-cell">
                       <button className="btn btn-sm btn-warning me-1 action-btn" onClick={() => openEdit(s)}><i className="bi bi-pencil" /></button>
                       <button className="btn btn-sm btn-danger action-btn" onClick={() => handleDelete(s.id)}><i className="bi bi-trash" /></button>

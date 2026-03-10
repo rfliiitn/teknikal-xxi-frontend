@@ -126,12 +126,12 @@ export default function OrderTab({ settings, outletName }) {
                 <tr>
                   <th><input type="checkbox" className="form-check-input" onChange={toggleAll} checked={paginated.length > 0 && selected.length === paginated.length} /></th>
                   <th>No</th>
-                  <th>Nama Barang</th>
+                  <th className="text-start">Nama Barang</th>
                   <th>Jumlah</th>
                   <th>Tgl Order</th>
                   <th>Tgl Diterima</th>
                   <th>Status</th>
-                  <th>Keterangan</th>
+                  <th className="text-start">Keterangan</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
@@ -142,12 +142,12 @@ export default function OrderTab({ settings, outletName }) {
                   <tr key={o.id} className={rowCls(o.status_barang)}>
                     <td><input type="checkbox" className="form-check-input" checked={selected.includes(o.id)} onChange={() => toggleSelect(o.id)} /></td>
                     <td>{(page - 1) * PER_PAGE + i + 1}</td>
-                    <td>{o.nama_barang}</td>
+                    <td className="text-start">{o.nama_barang}</td>
                     <td>{o.jumlah_barang}</td>
                     <td>{o.tanggal_order}</td>
                     <td>{o.tanggal_diterima || '-'}</td>
                     <td><span className={`badge badge-${o.status_barang?.toLowerCase().replace(/ /g, '-')}`}>{o.status_barang}</span></td>
-                    <td>{o.keterangan || '-'}</td>
+                    <td className="text-start">{o.keterangan || '-'}</td>
                     <td style={{ whiteSpace: 'nowrap' }} className="action-cell">
                       <button className="btn btn-sm btn-warning me-1 action-btn" onClick={() => openEdit(o)}><i className="bi bi-pencil" /></button>
                       <button className="btn btn-sm btn-danger action-btn" onClick={() => handleDelete(o.id)}><i className="bi bi-trash" /></button>

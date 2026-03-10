@@ -398,10 +398,10 @@ export default function FilmTab({ settings, outletName }) {
               <thead>
                 <tr>
                   <th style={{ width: 36 }}><input type="checkbox" className="form-check-input" onChange={toggleAll} checked={paginated.length > 0 && selected.length === paginated.length} /></th>
-                  <th>No</th><th>Judul Film</th><th>Nama File</th><th>Format</th>
+                  <th>No</th><th className="text-start">Judul Film</th><th className="text-start">Nama File</th><th>Format</th>
                   <th>Tgl Upload</th><th>Petugas</th><th>Tgl Tayang</th><th>Status Tayang</th>
                   <th>Status KDM</th><th>Jml File</th><th>Dari</th><th>Ke</th>
-                  <th>Rumah Prod.</th><th>Keterangan</th><th>Aksi</th>
+                  <th>Rumah Prod.</th><th className="text-start">Keterangan</th><th>Aksi</th>
                 </tr>
               </thead>
               <tbody style={{ textTransform: 'uppercase' }}>
@@ -411,14 +411,14 @@ export default function FilmTab({ settings, outletName }) {
                   <tr key={f.id} className={rowClass(f.status_tayang)}>
                     <td><input type="checkbox" className="form-check-input" checked={selected.includes(f.id)} onChange={() => toggleSelect(f.id)} /></td>
                     <td>{(page - 1) * PER_PAGE + i + 1}</td>
-                    <td style={{ maxWidth: 150, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textTransform: 'uppercase' }}>{f.judul_film}</td>
-                    <td style={{ maxWidth: 120, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textTransform: 'uppercase' }}>{f.nama_file}</td>
+                    <td className="text-start" style={{ maxWidth: 150, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textTransform: 'uppercase' }}>{f.judul_film}</td>
+                    <td className="text-start" style={{ maxWidth: 120, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textTransform: 'uppercase' }}>{f.nama_file}</td>
                     <td>{f.format_film}</td><td>{f.tanggal_upload}</td><td>{f.petugas_upload}</td>
                     <td>{f.tanggal_tayang || '-'}</td>
                     <td><span className={`badge badge-${f.status_tayang?.toLowerCase().replace(/ /g, '-')}`}>{f.status_tayang}</span></td>
                     <td>{f.status_kdm}</td><td>{f.jumlah_file || '-'}</td>
                     <td>{f.dikirim_dari || '-'}</td><td>{f.dikirim_ke || '-'}</td>
-                    <td>{f.rumah_produksi || '-'}</td><td>{f.keterangan || '-'}</td>
+                    <td>{f.rumah_produksi || '-'}</td><td className="text-start">{f.keterangan || '-'}</td>
                     <td style={{ whiteSpace: 'nowrap' }} className="action-cell">
                       <button className="btn btn-sm btn-warning me-1 action-btn" onClick={() => openEdit(f)}><i className="bi bi-pencil" /></button>
                       <button className="btn btn-sm btn-danger action-btn" onClick={() => handleDelete(f.id)}><i className="bi bi-trash" /></button>

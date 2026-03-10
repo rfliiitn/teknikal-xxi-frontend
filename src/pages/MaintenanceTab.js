@@ -113,8 +113,8 @@ export default function MaintenanceTab({ settings, outletName }) {
                   <th><input type="checkbox" className="form-check-input" onChange={toggleAll} checked={paginated.length > 0 && selected.length === paginated.length} /></th>
                   <th>No</th>
                   <th>Tanggal</th>
-                  <th>Maintenance</th>
-                  <th>Keterangan</th>
+                  <th className="text-start">Maintenance</th>
+                  <th className="text-start">Keterangan</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
@@ -126,8 +126,8 @@ export default function MaintenanceTab({ settings, outletName }) {
                     <td><input type="checkbox" className="form-check-input" checked={selected.includes(m.id)} onChange={() => toggleSelect(m.id)} /></td>
                     <td>{(page - 1) * PER_PAGE + i + 1}</td>
                     <td>{m.tanggal}</td>
-                    <td>{m.maintenance}</td>
-                    <td>{m.keterangan}</td>
+                    <td className="text-start">{m.maintenance}</td>
+                    <td className="text-start">{m.keterangan}</td>
                     <td style={{ whiteSpace: 'nowrap' }} className="action-cell">
                       <button className="btn btn-sm btn-warning me-1 action-btn" onClick={() => openEdit(m)}><i className="bi bi-pencil" /></button>
                       <button className="btn btn-sm btn-danger action-btn" onClick={() => handleDelete(m.id)}><i className="bi bi-trash" /></button>
