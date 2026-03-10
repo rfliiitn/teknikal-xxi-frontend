@@ -29,11 +29,12 @@ export default function EquipmentTab({ outletName }) {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    return !q ? items : items.filter(e =>
+    const f = !q ? items : items.filter(e =>
       e.studio?.toLowerCase().includes(q) ||
       e.projector?.toLowerCase().includes(q) ||
       e.server?.toLowerCase().includes(q)
     );
+    return [...f].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
   }, [items, search]);
 
   const openAdd = () => { setEditItem(null); setForm(EMPTY_FORM); setFormErr({}); setShowForm(true); };

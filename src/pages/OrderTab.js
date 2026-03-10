@@ -41,7 +41,7 @@ export default function OrderTab({ settings, outletName }) {
     const matchSearch = !q || o.nama_barang?.toLowerCase().includes(q);
     const matchStatus = !filterStatus || o.status_barang === filterStatus;
     return matchSearch && matchStatus;
-  }), [items, search, filterStatus]);
+  }).sort((a, b) => new Date(b.tanggal_order || b.created_at || 0) - new Date(a.tanggal_order || a.created_at || 0)), [items, search, filterStatus]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
   const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);

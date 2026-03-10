@@ -32,7 +32,8 @@ export default function MaintenanceTab({ settings, outletName }) {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    return !q ? items : items.filter(m => m.maintenance?.toLowerCase().includes(q) || m.keterangan?.toLowerCase().includes(q));
+    const f = !q ? items : items.filter(m => m.maintenance?.toLowerCase().includes(q) || m.keterangan?.toLowerCase().includes(q));
+    return [...f].sort((a, b) => new Date(b.tanggal || b.created_at || 0) - new Date(a.tanggal || a.created_at || 0));
   }, [items, search]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));

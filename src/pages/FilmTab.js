@@ -268,7 +268,11 @@ export default function FilmTab({ settings, outletName }) {
         const matchStatus = !filterStatus || f.status_tayang === filterStatus;
         return matchSearch && matchStatus;
       })
-      .sort((a, b) => (STATUS_ORDER[a.status_tayang] ?? 0) - (STATUS_ORDER[b.status_tayang] ?? 0));
+      .sort((a, b) => {
+        const statusDiff = (STATUS_ORDER[a.status_tayang] ?? 0) - (STATUS_ORDER[b.status_tayang] ?? 0);
+        if (statusDiff !== 0) return statusDiff;
+        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+      });
   }, [films, search, filterStatus]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
