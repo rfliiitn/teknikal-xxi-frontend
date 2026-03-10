@@ -256,7 +256,7 @@ export default function FilmTab({ settings, outletName }) {
   const [page, setPage] = useState(1);
   const [showServerUpdate, setShowServerUpdate] = useState(false);
   const [servers, setServers] = useState([]);
-  const [serverUpdate, setServerUpdate] = useState({ server_id: '', size_terpakai: '' });
+  const [serverInputs, setServerInputs] = useState({});
   const PER_PAGE = 20;
 
   const fetchFilms = async () => {
@@ -351,14 +351,18 @@ export default function FilmTab({ settings, outletName }) {
   };
 
   const handleUpdateServer = async () => {
-    if (!serverUpdate.server_id) return toast.warning('Pilih server terlebih dahulu');
+    setSaving(true);
     try {
-      await API.put(`/server/${serverUpdate.server_id}`, { size_terpakai: serverUpdate.size_terpakai || null });
-      fetchEquipments();
+      await Promise.all(
+        Object.entries(serverInputs).map(([id, val]) =>
+          API.put(`/server/${id}`, { size_terpakai: val !== '' ? parseFloat(val) : null })
+        )
+      );
+      await fetchEquipments();
       setShowServerUpdate(false);
-      setServerUpdate({ server_id: '', size_terpakai: '' });
-      alert('Sisa kapasitas server berhasil diupdate');
+      toast.success('Kapasitas server berhasil diupdate');
     } catch { toast.error('Gagal update kapasitas server'); }
+    setSaving(false);
   };
 
   const TRASH_COLS = [
@@ -392,7 +396,7 @@ export default function FilmTab({ settings, outletName }) {
             <button className="btn btn-outline-secondary btn-sm" onClick={() => setShowTrash(true)}><i className="bi bi-trash2 me-1" />Sampah</button>
             <button className="btn btn-outline-dark btn-sm" onClick={handlePreviewPDF}><i className="bi bi-eye me-1" />Preview PDF</button>
             <button className="btn btn-outline-secondary btn-sm" onClick={handleDownloadPDF}><i className="bi bi-download me-1" />Download PDF</button>
-            <button className="btn btn-outline-info btn-sm" onClick={() => setShowServerUpdate(true)}><i className="bi bi-hdd me-1" />Update Server</button>
+            <button className="btn btn-outline-info btn-sm" onClick={() => { const init = {}; servers.forEach(sv => { init[sv.id] = sv.size_terpakai ?? ''; }); setServerInputs(init); setShowServerUpdate(true); }}><i className="bi bi-hdd me-1" />Update Server</button>
           </div>
         )}
 
@@ -564,42 +568,46 @@ export default function FilmTab({ settings, outletName }) {
                 {servers.length === 0 ? (
                   <div className="alert alert-warning">Belum ada data server. Tambah di tab Equipment &gt; Data Server terlebih dahulu.</div>
                 ) : (
-                  <div className="row g-3">
-                    <div className="col-12">
-                      <label className="form-label small fw-semibold">Pilih Server</label>
-                      <select className="form-select" value={serverUpdate.server_id} onChange={e => {
-                        const sv = servers.find(x => x.id === e.target.value);
-                        const sisa = sv?.size_terpakai ?? '';
-                        setServerUpdate({ server_id: e.target.value, size_terpakai: sisa });
-                      }}>
-                        <option value="">-- Pilih server --</option>
-                        {servers.map(sv => (
-                          <option key={sv.id} value={sv.id}>
-                            {sv.is_aam ? sv.type_server.toUpperCase() : (sv.studio_number ? `STD ${sv.studio_number} - ${sv.type_server.toUpperCase()}` : sv.type_server.toUpperCase())} | Kapasitas: {sv.kapasitas_server ? sv.kapasitas_server + ' GB' : '-'} | Terpakai: {sv.size_terpakai !== null && sv.size_terpakai !== '' ? sv.size_terpakai + ' GB' : 'belum diset'}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="col-12">
-                      <label className="form-label small fw-semibold">Size Terpakai</label>
-                      <div className="input-group">
-                        <input
-                          type="number"
-                          className="form-control"
-                          placeholder="Masukkan size terpakai"
-                          value={serverUpdate.size_terpakai}
-                          onChange={e => setServerUpdate(s => ({ ...s, size_terpakai: e.target.value }))}
-                        />
-                        <span className="input-group-text">GB</span>
-                      </div>
-                    </div>
+                  <div className="row g-2">
+                    {servers.map(sv => {
+                      const label = sv.is_aam ? sv.type_server.toUpperCase()
+                        : (sv.studio_number ? `STD ${sv.studio_number} - ${sv.type_server.toUpperCase()}` : sv.type_server.toUpperCase());
+                      const kap = parseFloat(sv.kapasitas_server) || 0;
+                      const terpakai = parseFloat(serverInputs[sv.id]) || 0;
+                      const sisa = kap > 0 ? (kap - terpakai).toFixed(0) : null;
+                      const persen = kap > 0 ? Math.round(((kap - terpakai) / kap) * 100) : null;
+                      return (
+                        <div key={sv.id} className="col-12">
+                          <div className="p-2 rounded" style={{ border: '1px solid var(--border)', background: 'var(--surface-2)' }}>
+                            <div className="d-flex justify-content-between align-items-center mb-1">
+                              <span className="fw-semibold small" style={{ textTransform: 'uppercase' }}>{label}</span>
+                              {sisa !== null && (
+                                <span className="small text-muted">Sisa: <strong>{sisa} GB</strong> ({persen}%)</span>
+                              )}
+                            </div>
+                            <div className="input-group input-group-sm">
+                              <span className="input-group-text" style={{ minWidth: 90 }}>Terpakai</span>
+                              <input
+                                type="number"
+                                className="form-control"
+                                placeholder={kap > 0 ? `Maks ${kap} GB` : 'GB'}
+                                value={serverInputs[sv.id] ?? ''}
+                                onChange={e => setServerInputs(s => ({ ...s, [sv.id]: e.target.value }))}
+                              />
+                              <span className="input-group-text">GB</span>
+                              {kap > 0 && <span className="input-group-text text-muted">/ {kap} GB</span>}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
               <div className="modal-footer">
                 <button className="btn btn-secondary" onClick={() => setShowServerUpdate(false)}>Batal</button>
-                <button className="btn btn-primary" onClick={handleUpdateServer} disabled={servers.length === 0}>
-                  <i className="bi bi-check-lg me-1" />Update
+                <button className="btn btn-primary" onClick={handleUpdateServer} disabled={servers.length === 0 || saving}>
+                  {saving ? <span className="spinner-border spinner-border-sm me-1" /> : <i className="bi bi-check-lg me-1" />}Update Semua
                 </button>
               </div>
             </div>
