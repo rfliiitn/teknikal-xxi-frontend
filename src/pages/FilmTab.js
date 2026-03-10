@@ -271,7 +271,7 @@ export default function FilmTab({ settings, outletName }) {
       .sort((a, b) => {
         const statusDiff = (STATUS_ORDER[a.status_tayang] ?? 0) - (STATUS_ORDER[b.status_tayang] ?? 0);
         if (statusDiff !== 0) return statusDiff;
-        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+        return new Date(b.tanggal_upload || 0) - new Date(a.tanggal_upload || 0);
       });
   }, [films, search, filterStatus]);
 
