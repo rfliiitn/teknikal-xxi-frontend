@@ -12,7 +12,7 @@ function ProjectorTab() {
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editItem, setEditItem] = useState(null);
-  const [form, setForm] = useState({ type_projector: '', type_lensa: '', lamp_projector: '', keterangan: '' });
+  const [form, setForm] = useState({ type_projector: '', type_lensa: '', lamp_projector: '', total_unit: '', keterangan: '' });
   const [formErr, setFormErr] = useState({});
   const [showTrash, setShowTrash] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -69,13 +69,13 @@ function ProjectorTab() {
         {loading ? <div className="text-center py-4"><div className="spinner-border text-primary" /></div> : (
           <div className="table-responsive">
             <table className="table table-bordered table-sm">
-              <thead><tr><th>No</th><th>Type Projector</th><th>Type Lensa</th><th>Lamp</th><th>Keterangan</th><th>Aksi</th></tr></thead>
+              <thead><tr><th>No</th><th>Type Projector</th><th>Type Lensa</th><th>Lamp</th><th>Total Unit</th><th>Keterangan</th><th>Aksi</th></tr></thead>
               <tbody style={{ textTransform: 'uppercase' }}>
                 {filtered.length === 0 ? <tr><td colSpan={6} className="text-center text-muted py-3">Tidak ada data</td></tr>
                 : filtered.map((p, i) => (
                   <tr key={p.id}>
                     <td>{i + 1}</td><td>{p.type_projector}</td><td>{p.type_lensa || '-'}</td>
-                    <td>{p.lamp_projector || '-'}</td><td>{p.keterangan || '-'}</td>
+                    <td>{p.lamp_projector || '-'}</td><td>{p.total_unit || '-'}</td><td>{p.keterangan || '-'}</td>
                     <td style={{ whiteSpace: 'nowrap' }} className="action-cell">
                       <button className="btn btn-sm btn-warning me-1 action-btn" onClick={() => openEdit(p)}><i className="bi bi-pencil" /></button>
                       <button className="btn btn-sm btn-danger action-btn" onClick={() => handleDelete(p.id)}><i className="bi bi-trash" /></button>
@@ -113,6 +113,10 @@ function ProjectorTab() {
                     <option value="xenon">Xenon</option>
                   </select>
                 </div>
+                <div className="col-md-6">
+                  <label className="form-label small fw-semibold">Total Unit</label>
+                  <input type="number" className="form-control" placeholder="Contoh: 2" value={fc('total_unit')} onChange={e => setFc('total_unit', e.target.value)} />
+                </div>
                 <div className="col-12">
                   <label className="form-label small fw-semibold">Keterangan</label>
                   <textarea className="form-control" rows={2} value={fc('keterangan')} onChange={e => setFc('keterangan', e.target.value)} />
@@ -129,7 +133,7 @@ function ProjectorTab() {
         </div>
       )}
       <TrashModal show={showTrash} onHide={() => setShowTrash(false)} endpoint="projector"
-        columns={[{ key: 'type_projector', label: 'Type Projector' }, { key: 'lamp_projector', label: 'Lamp' }]} onRestored={fetchData} />
+        columns={[{ key: 'type_projector', label: 'Type Projector' }, { key: 'lamp_projector', label: 'Lamp' }, { key: 'total_unit', label: 'Total Unit' }]} onRestored={fetchData} />
     </div>
   );
 }
@@ -143,7 +147,7 @@ function ServerTab() {
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editItem, setEditItem] = useState(null);
-  const [form, setForm] = useState({ type_server: '', kapasitas_server: '', keterangan: '' });
+  const [form, setForm] = useState({ type_server: '', kapasitas_server: '', total_unit: '', keterangan: '' });
   const [formErr, setFormErr] = useState({});
   const [showTrash, setShowTrash] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -201,13 +205,14 @@ function ServerTab() {
         {loading ? <div className="text-center py-4"><div className="spinner-border text-primary" /></div> : (
           <div className="table-responsive">
             <table className="table table-bordered table-sm">
-              <thead><tr><th>No</th><th>Type Server</th><th>Kapasitas</th><th>Keterangan</th><th>Aksi</th></tr></thead>
+              <thead><tr><th>No</th><th>Type Server</th><th>Kapasitas</th><th>Total Unit</th><th>Keterangan</th><th>Aksi</th></tr></thead>
               <tbody style={{ textTransform: 'uppercase' }}>
-                {filtered.length === 0 ? <tr><td colSpan={5} className="text-center text-muted py-3">Tidak ada data</td></tr>
+                {filtered.length === 0 ? <tr><td colSpan={6} className="text-center text-muted py-3">Tidak ada data</td></tr>
                 : filtered.map((s, i) => (
                   <tr key={s.id}>
                     <td>{i + 1}</td><td>{s.type_server}</td>
                     <td>{s.kapasitas_server ? `${s.kapasitas_server} GB` : '-'}</td>
+                    <td>{s.total_unit || '-'}</td>
                     <td>{s.keterangan || '-'}</td>
                     <td style={{ whiteSpace: 'nowrap' }} className="action-cell">
                       <button className="btn btn-sm btn-warning me-1 action-btn" onClick={() => openEdit(s)}><i className="bi bi-pencil" /></button>
@@ -272,7 +277,7 @@ function AcTab() {
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editItem, setEditItem] = useState(null);
-  const [form, setForm] = useState({ type_ac: '', merk_ac: '', total_pk: '', keterangan: '' });
+  const [form, setForm] = useState({ type_ac: '', merk_ac: '', total_pk: '', total_unit: '', keterangan: '' });
   const [formErr, setFormErr] = useState({});
   const [showTrash, setShowTrash] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -335,13 +340,13 @@ function AcTab() {
         {loading ? <div className="text-center py-4"><div className="spinner-border text-primary" /></div> : (
           <div className="table-responsive">
             <table className="table table-bordered table-sm">
-              <thead><tr><th>No</th><th>Type AC</th><th>Merk AC</th><th>Total PK</th><th>Keterangan</th><th>Aksi</th></tr></thead>
+              <thead><tr><th>No</th><th>Type AC</th><th>Merk AC</th><th>Total PK</th><th>Total Unit</th><th>Keterangan</th><th>Aksi</th></tr></thead>
               <tbody style={{ textTransform: 'uppercase' }}>
                 {filtered.length === 0 ? <tr><td colSpan={6} className="text-center text-muted py-3">Tidak ada data</td></tr>
                 : filtered.map((a, i) => (
                   <tr key={a.id}>
                     <td>{i + 1}</td><td>{a.type_ac || '-'}</td><td>{a.merk_ac}</td>
-                    <td>{a.total_pk ? `${a.total_pk} PK` : '-'}</td><td>{a.keterangan || '-'}</td>
+                    <td>{a.total_pk ? `${a.total_pk} PK` : '-'}</td><td>{a.total_unit || '-'}</td><td>{a.keterangan || '-'}</td>
                     <td style={{ whiteSpace: 'nowrap' }} className="action-cell">
                       <button className="btn btn-sm btn-warning me-1 action-btn" onClick={() => openEdit(a)}><i className="bi bi-pencil" /></button>
                       <button className="btn btn-sm btn-danger action-btn" onClick={() => handleDelete(a.id)}><i className="bi bi-trash" /></button>
@@ -376,12 +381,16 @@ function AcTab() {
                   <input className={cls('merk_ac')} value={fc('merk_ac')} onChange={e => setFc('merk_ac', e.target.value)} />
                   {formErr.merk_ac && <div className="invalid-feedback">{formErr.merk_ac}</div>}
                 </div>
-                <div className="col-md-6">
+                <div className="col-md-4">
                   <label className="form-label small fw-semibold">Total PK</label>
                   <div className="input-group">
                     <input type="number" step="0.5" className="form-control" placeholder="Contoh: 12.5" value={fc('total_pk')} onChange={e => setFc('total_pk', e.target.value)} />
                     <span className="input-group-text">PK</span>
                   </div>
+                </div>
+                <div className="col-md-4">
+                  <label className="form-label small fw-semibold">Total Unit</label>
+                  <input type="number" className="form-control" placeholder="Contoh: 4" value={fc('total_unit')} onChange={e => setFc('total_unit', e.target.value)} />
                 </div>
                 <div className="col-12">
                   <label className="form-label small fw-semibold">Keterangan</label>
@@ -479,7 +488,7 @@ function StudioTab() {
   const getServerLabel = (id) => servers.find(s => s.id === id)?.type_server || '-';
   const getAcLabels = (ids) => {
     if (!ids || ids.length === 0) return '-';
-    return ids.map(id => acList.find(a => a.id === id)?.merk_ac || '?').join(', ');
+    return ids.map(id => { const a = acList.find(x => x.id === id); return a ? `${a.merk_ac}${a.total_pk ? ' (' + a.total_pk + ' PK)' : ''}` : '?'; }).join(', ');
   };
 
   const fc = (k) => form[k] ?? '';
