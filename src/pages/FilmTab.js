@@ -79,23 +79,23 @@ const buildPDF = (films, outletName, settings, equipments) => {
       { content: f.format_film?.toUpperCase() || '', styles: { halign: 'center' } },
       { content: f.status_kdm?.toUpperCase() || '', styles: { halign: 'center' } }
     ]),
-    styles: { fontSize: 9, cellPadding: 2.5, lineColor: [0,0,0], lineWidth: 0.3, textColor: [0,0,0] },
+    styles: { fontSize: 8, cellPadding: 1.8, lineColor: [0,0,0], lineWidth: 0.3, textColor: [0,0,0] },
     headStyles: {
       fillColor: AMBER,
       textColor: [0,0,0],
       fontStyle: 'bold',
       lineWidth: 0.3,
       lineColor: [0,0,0],
-      fontSize: 8.5,
+      fontSize: 8,
       halign: 'center',
       valign: 'middle'
     },
     columnStyles: {
-      0: { cellWidth: 10 },
-      1: { cellWidth: 70 },
-      2: { cellWidth: 40 },
-      3: { cellWidth: 27 },
-      4: { cellWidth: 31 }
+      0: { cellWidth: 8 },
+      1: { cellWidth: 65 },
+      2: { cellWidth: 35, halign: 'center' },
+      3: { cellWidth: 22, halign: 'center' },
+      4: { cellWidth: 52, halign: 'center' }
     },
     didParseCell: (data) => {
       if (data.section === 'body') {
