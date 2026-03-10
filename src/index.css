@@ -240,7 +240,7 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   margin-bottom: 1rem;
 }
-.table-toolbar .search-input { min-width: 200px; }
+.table-toolbar .search-input { flex: 1; min-width: 0; }
 
 /* ── PAGINATION ── */
 .pagination .page-link { color: var(--primary); border-color: var(--border); font-size: 0.85rem; }

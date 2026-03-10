@@ -101,16 +101,16 @@ export default function OrderTab({ settings, outletName }) {
       <div className="data-card p-3">
         <div className="table-toolbar">
           <input className="form-control search-input" placeholder="Cari nama barang..." value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} />
-          <select className="form-select" style={{ width: 180 }} value={filterStatus} onChange={e => { setFilterStatus(e.target.value); setPage(1); }}>
-            <option value="">Semua Status</option>
-            {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
-          </select>
           <button className="btn btn-sm btn-outline-secondary" onClick={() => setShowActions(v => !v)}>
             <i className={`bi ${showActions ? 'bi-x' : 'bi-list'} me-1`} />MENU
           </button>
         </div>
         {showActions && (
           <div className="toolbar-actions">
+            <select className="form-select form-select-sm" style={{ width: 150 }} value={filterStatus} onChange={e => { setFilterStatus(e.target.value); setPage(1); }}>
+              <option value="">Semua Status</option>
+              {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
+            </select>
             <button className="btn btn-primary btn-sm" onClick={openAdd}><i className="bi bi-plus-lg me-1" />Tambah</button>
             <button className="btn btn-danger btn-sm" onClick={handleBulkDelete} disabled={!selected.length}><i className="bi bi-trash me-1" />Hapus ({selected.length})</button>
             <button className="btn btn-outline-secondary btn-sm" onClick={() => setShowTrash(true)}><i className="bi bi-trash2 me-1" />Sampah</button>
