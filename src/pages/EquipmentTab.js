@@ -143,7 +143,7 @@ function ServerTab() {
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editItem, setEditItem] = useState(null);
-  const [form, setForm] = useState({ type_server: '', kapasitas_server: '', size_terpakai: '', keterangan: '' });
+  const [form, setForm] = useState({ type_server: '', kapasitas_server: '', keterangan: '' });
   const [formErr, setFormErr] = useState({});
   const [showTrash, setShowTrash] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -178,10 +178,7 @@ function ServerTab() {
     if (!window.confirm('Pindahkan ke tempat sampah?')) return;
     try { await API.delete(`/server/${id}`); toast.success('Dipindahkan ke sampah'); fetchData(); } catch { toast.error('Gagal menghapus'); }
   };
-  const sisaKapasitas = (item) => {
-    if (!item.kapasitas_server || item.size_terpakai === null || item.size_terpakai === '') return '-';
-    return `${(parseFloat(item.kapasitas_server) - parseFloat(item.size_terpakai)).toFixed(1)} GB`;
-  };
+
   const fc = (k) => form[k] ?? '';
   const setFc = (k, v) => setForm(f => ({ ...f, [k]: v }));
   const cls = (k) => `form-control ${formErr[k] ? 'is-invalid' : ''}`;
@@ -204,15 +201,14 @@ function ServerTab() {
         {loading ? <div className="text-center py-4"><div className="spinner-border text-primary" /></div> : (
           <div className="table-responsive">
             <table className="table table-bordered table-sm">
-              <thead><tr><th>No</th><th>Type Server</th><th>Kapasitas</th><th>Size Terpakai</th><th>Sisa</th><th>Keterangan</th><th>Aksi</th></tr></thead>
+              <thead><tr><th>No</th><th>Type Server</th><th>Kapasitas</th><th>Keterangan</th><th>Aksi</th></tr></thead>
               <tbody style={{ textTransform: 'uppercase' }}>
-                {filtered.length === 0 ? <tr><td colSpan={7} className="text-center text-muted py-3">Tidak ada data</td></tr>
+                {filtered.length === 0 ? <tr><td colSpan={5} className="text-center text-muted py-3">Tidak ada data</td></tr>
                 : filtered.map((s, i) => (
                   <tr key={s.id}>
                     <td>{i + 1}</td><td>{s.type_server}</td>
                     <td>{s.kapasitas_server ? `${s.kapasitas_server} GB` : '-'}</td>
-                    <td>{s.size_terpakai !== null && s.size_terpakai !== '' ? `${s.size_terpakai} GB` : '-'}</td>
-                    <td>{sisaKapasitas(s)}</td><td>{s.keterangan || '-'}</td>
+                    <td>{s.keterangan || '-'}</td>
                     <td style={{ whiteSpace: 'nowrap' }} className="action-cell">
                       <button className="btn btn-sm btn-warning me-1 action-btn" onClick={() => openEdit(s)}><i className="bi bi-pencil" /></button>
                       <button className="btn btn-sm btn-danger action-btn" onClick={() => handleDelete(s.id)}><i className="bi bi-trash" /></button>
@@ -245,13 +241,7 @@ function ServerTab() {
                     <span className="input-group-text">GB</span>
                   </div>
                 </div>
-                <div className="col-md-6">
-                  <label className="form-label small fw-semibold">Size Terpakai</label>
-                  <div className="input-group">
-                    <input type="number" className="form-control" placeholder="Contoh: 3500" value={fc('size_terpakai')} onChange={e => setFc('size_terpakai', e.target.value)} />
-                    <span className="input-group-text">GB</span>
-                  </div>
-                </div>
+
                 <div className="col-12">
                   <label className="form-label small fw-semibold">Keterangan</label>
                   <textarea className="form-control" rows={2} value={fc('keterangan')} onChange={e => setFc('keterangan', e.target.value)} />

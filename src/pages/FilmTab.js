@@ -36,7 +36,7 @@ const textColor = (status) => {
   return [0, 0, 0];                                       // hitam
 };
 
-const buildPDF = (films, outletName, settings, equipments) => {
+const buildPDF = (films, outletName, settings, servers) => {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageWidth = doc.internal.pageSize.width;
   const pageHeight = doc.internal.pageSize.height;
@@ -109,7 +109,7 @@ const buildPDF = (films, outletName, settings, equipments) => {
   const finalY = doc.lastAutoTable.finalY;
 
   // ── Hitung ruang yang dibutuhkan untuk section bawah ──
-  const estServerLines = (equipments && equipments.length > 0) ? equipments.length : 1;
+  const estServerLines = (servers && servers.length > 0) ? servers.length : 1;
   // section: label(10) + note(16 + server*5) + garis(25) + nama(10) + keterangan(30) = ~90mm + server
   const neededSpace = 90 + estServerLines * 5;
 
@@ -151,10 +151,12 @@ const buildPDF = (films, outletName, settings, equipments) => {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   const serverLines = [];
-  if (equipments && equipments.length > 0) {
-    equipments.forEach(eq => {
-      const nama = eq.server ? `STD ${eq.studio} - ${eq.server.toUpperCase()}` : `STD ${eq.studio}`;
-      serverLines.push({ label: nama, val: eq.sisa_kapasitas || '-' });
+  if (servers && servers.length > 0) {
+    servers.forEach(sv => {
+      const sisa = (sv.kapasitas_server && sv.size_terpakai !== null && sv.size_terpakai !== '')
+        ? `${(parseFloat(sv.kapasitas_server) - parseFloat(sv.size_terpakai)).toFixed(1)} GB`
+        : (sv.size_terpakai !== null && sv.size_terpakai !== '' ? `${sv.size_terpakai} GB` : '-');
+      serverLines.push({ label: sv.type_server.toUpperCase(), val: sisa });
     });
   } else {
     serverLines.push({ label: 'Tidak ada data server', val: '' });
@@ -242,8 +244,8 @@ export default function FilmTab({ settings, outletName }) {
   const [saving, setSaving] = useState(false);
   const [page, setPage] = useState(1);
   const [showServerUpdate, setShowServerUpdate] = useState(false);
-  const [equipments, setEquipments] = useState([]);
-  const [serverUpdate, setServerUpdate] = useState({ equipment_id: '', sisa_kapasitas: '' });
+  const [servers, setServers] = useState([]);
+  const [serverUpdate, setServerUpdate] = useState({ server_id: '', size_terpakai: '' });
   const PER_PAGE = 20;
 
   const fetchFilms = async () => {
@@ -253,7 +255,7 @@ export default function FilmTab({ settings, outletName }) {
   };
 
   const fetchEquipments = async () => {
-    try { const res = await API.get('/equipment'); setEquipments(res.data.filter(e => !e.deleted)); } catch {}
+    try { const res = await API.get('/server'); setServers(res.data); } catch {}
   };
 
   useEffect(() => { fetchFilms(); fetchEquipments(); }, []);
@@ -326,25 +328,24 @@ export default function FilmTab({ settings, outletName }) {
   const cls = (key) => `form-control ${formErr[key] ? 'is-invalid' : ''}`;
 
   const handlePreviewPDF = () => {
-    const doc = buildPDF(filtered, outletName, settings, equipments);
+    const doc = buildPDF(filtered, outletName, settings, servers);
     const url = doc.output('bloburl');
     window.open(url, '_blank');
   };
 
   const handleDownloadPDF = () => {
-    const doc = buildPDF(filtered, outletName, settings, equipments);
+    const doc = buildPDF(filtered, outletName, settings, servers);
     const periode = formatPeriode().replace(/ /g, '_');
     doc.save(`LAPORAN_FILM_${(outletName || 'OUTLET').toUpperCase().replace(/ /g, '_')}_${periode}.pdf`);
   };
 
   const handleUpdateServer = async () => {
-    if (!serverUpdate.equipment_id) return toast.warning('Pilih server terlebih dahulu');
-    const sisa = serverUpdate.sisa_kapasitas ? `${serverUpdate.sisa_kapasitas} GB` : '';
+    if (!serverUpdate.server_id) return toast.warning('Pilih server terlebih dahulu');
     try {
-      await API.put(`/equipment/${serverUpdate.equipment_id}`, { sisa_kapasitas: sisa });
+      await API.put(`/server/${serverUpdate.server_id}`, { size_terpakai: serverUpdate.size_terpakai || null });
       fetchEquipments();
       setShowServerUpdate(false);
-      setServerUpdate({ equipment_id: '', sisa_kapasitas: '' });
+      setServerUpdate({ server_id: '', size_terpakai: '' });
       alert('Sisa kapasitas server berhasil diupdate');
     } catch { toast.error('Gagal update kapasitas server'); }
   };
@@ -549,35 +550,34 @@ export default function FilmTab({ settings, outletName }) {
                 <button className="btn-close" onClick={() => setShowServerUpdate(false)} />
               </div>
               <div className="modal-body">
-                {equipments.length === 0 ? (
-                  <div className="alert alert-warning">Belum ada data equipment. Tambah di tab Equipment terlebih dahulu.</div>
+                {servers.length === 0 ? (
+                  <div className="alert alert-warning">Belum ada data server. Tambah di tab Equipment &gt; Data Server terlebih dahulu.</div>
                 ) : (
                   <div className="row g-3">
                     <div className="col-12">
-                      <label className="form-label small fw-semibold">Pilih Server / Studio</label>
-                      <select className="form-select" value={serverUpdate.equipment_id} onChange={e => {
-                        const eq = equipments.find(x => x.id === e.target.value);
-                        let sisa = eq?.sisa_kapasitas || '';
-                        if (sisa.toUpperCase().endsWith('GB')) sisa = sisa.replace(/GB/i, '').trim();
-                        setServerUpdate({ equipment_id: e.target.value, sisa_kapasitas: sisa });
+                      <label className="form-label small fw-semibold">Pilih Server</label>
+                      <select className="form-select" value={serverUpdate.server_id} onChange={e => {
+                        const sv = servers.find(x => x.id === e.target.value);
+                        const sisa = sv?.size_terpakai ?? '';
+                        setServerUpdate({ server_id: e.target.value, size_terpakai: sisa });
                       }}>
                         <option value="">-- Pilih server --</option>
-                        {equipments.map(eq => (
-                          <option key={eq.id} value={eq.id}>
-                            Studio {eq.studio} — {eq.server} | Total: {eq.kapasitas_server || '-'} | Sisa: {eq.sisa_kapasitas || 'belum diset'}
+                        {servers.map(sv => (
+                          <option key={sv.id} value={sv.id}>
+                            {sv.type_server.toUpperCase()} | Kapasitas: {sv.kapasitas_server ? sv.kapasitas_server + ' GB' : '-'} | Terpakai: {sv.size_terpakai !== null && sv.size_terpakai !== '' ? sv.size_terpakai + ' GB' : 'belum diset'}
                           </option>
                         ))}
                       </select>
                     </div>
                     <div className="col-12">
-                      <label className="form-label small fw-semibold">Sisa Kapasitas</label>
+                      <label className="form-label small fw-semibold">Size Terpakai</label>
                       <div className="input-group">
                         <input
                           type="number"
                           className="form-control"
-                          placeholder="Masukkan sisa kapasitas"
-                          value={serverUpdate.sisa_kapasitas}
-                          onChange={e => setServerUpdate(s => ({ ...s, sisa_kapasitas: e.target.value }))}
+                          placeholder="Masukkan size terpakai"
+                          value={serverUpdate.size_terpakai}
+                          onChange={e => setServerUpdate(s => ({ ...s, size_terpakai: e.target.value }))}
                         />
                         <span className="input-group-text">GB</span>
                       </div>
@@ -587,7 +587,7 @@ export default function FilmTab({ settings, outletName }) {
               </div>
               <div className="modal-footer">
                 <button className="btn btn-secondary" onClick={() => setShowServerUpdate(false)}>Batal</button>
-                <button className="btn btn-primary" onClick={handleUpdateServer} disabled={equipments.length === 0}>
+                <button className="btn btn-primary" onClick={handleUpdateServer} disabled={servers.length === 0}>
                   <i className="bi bi-check-lg me-1" />Update
                 </button>
               </div>
