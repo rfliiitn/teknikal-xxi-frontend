@@ -108,8 +108,19 @@ const buildPDF = (films, outletName, settings, equipments) => {
 
   const finalY = doc.lastAutoTable.finalY;
 
-  // ── SECTION BAWAH: YANG MEMBUAT | NOTE | MENGETAHUI ──
-  const sectionY = finalY + 8;
+  // ── Hitung ruang yang dibutuhkan untuk section bawah ──
+  const estServerLines = (equipments && equipments.length > 0) ? equipments.length : 1;
+  // section: label(10) + note(16 + server*5) + garis(25) + nama(10) + keterangan(30) = ~90mm + server
+  const neededSpace = 90 + estServerLines * 5;
+
+  // Kalau tidak muat, pindah ke halaman baru
+  let sectionY;
+  if (finalY + neededSpace > pageHeight - 10) {
+    doc.addPage();
+    sectionY = 20;
+  } else {
+    sectionY = finalY + 8;
+  }
 
   // Kolom kiri: center di 1/4 kiri halaman
   const leftCx  = pageWidth * 0.17;   // pusat kolom kiri
