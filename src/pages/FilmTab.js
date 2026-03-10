@@ -160,14 +160,12 @@ const buildPDF = (films, outletName, settings, servers) => {
       const sisaStr = sisa !== null
         ? `${sisa.toFixed(0)} GB${persen !== null ? ` (${persen}%)` : ''}`
         : '-';
-      // AAM Library tanpa prefix STD, server lain cari studio_number dari relasi
+      // AAM Library tanpa prefix STD, server lain pakai studio_number
       let label;
       if (sv.is_aam) {
         label = sv.type_server.toUpperCase();
       } else {
-        // Cari studio yang pakai server ini
-        const studioNum = sv.studios?.[0]?.studio_number ?? sv.studio_number ?? null;
-        label = studioNum ? `STD ${studioNum} - ${sv.type_server.toUpperCase()}` : sv.type_server.toUpperCase();
+        label = sv.studio_number ? `STD ${sv.studio_number} - ${sv.type_server.toUpperCase()}` : sv.type_server.toUpperCase();
       }
       serverLines.push({ label, val: sisaStr });
     });
@@ -577,7 +575,7 @@ export default function FilmTab({ settings, outletName }) {
                         <option value="">-- Pilih server --</option>
                         {servers.map(sv => (
                           <option key={sv.id} value={sv.id}>
-                            {sv.is_aam ? sv.type_server.toUpperCase() : (sv.studios?.[0]?.studio_number ? `STD ${sv.studios[0].studio_number} - ${sv.type_server.toUpperCase()}` : sv.type_server.toUpperCase())} | Kapasitas: {sv.kapasitas_server ? sv.kapasitas_server + ' GB' : '-'} | Terpakai: {sv.size_terpakai !== null && sv.size_terpakai !== '' ? sv.size_terpakai + ' GB' : 'belum diset'}
+                            {sv.is_aam ? sv.type_server.toUpperCase() : (sv.studio_number ? `STD ${sv.studio_number} - ${sv.type_server.toUpperCase()}` : sv.type_server.toUpperCase())} | Kapasitas: {sv.kapasitas_server ? sv.kapasitas_server + ' GB' : '-'} | Terpakai: {sv.size_terpakai !== null && sv.size_terpakai !== '' ? sv.size_terpakai + ' GB' : 'belum diset'}
                           </option>
                         ))}
                       </select>
