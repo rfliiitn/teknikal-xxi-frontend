@@ -240,7 +240,8 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   margin-bottom: 1rem;
 }
-.table-toolbar .search-input { flex: 1; min-width: 0; }
+.table-toolbar .search-input { flex: 1; min-width: 0; max-width: 100%; }
+.table-toolbar .btn { white-space: nowrap; flex-shrink: 0; }
 
 /* ── PAGINATION ── */
 .pagination .page-link { color: var(--primary); border-color: var(--border); font-size: 0.85rem; }
@@ -280,7 +281,7 @@ h1, h2, h3, h4, h5, h6 {
   .content-area { padding: 1rem; }
   .auth-card { padding: 1.5rem; }
   .table-toolbar { gap: 0.4rem; }
-  .table-toolbar .search-input { min-width: 100%; }
+  .table-toolbar .search-input { min-width: 0; flex: 1; }
 }
 
 /* ── ACTION BUTTONS - hidden, show on row hover ── */
