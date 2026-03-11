@@ -481,7 +481,7 @@ function StudioTab() {
       const toNum = v => (v !== '' && v !== null && v !== undefined) ? parseFloat(v) : null;
       const payload = {
         ...form,
-        studio_number: parseInt(form.studio_number),
+        studio_number: form.studio_number,
         kapasitas_kursi: toNum(form.kapasitas_kursi),
         ukuran_layar: toNum(form.ukuran_layar),
         projector_id: form.projector_id || null,
