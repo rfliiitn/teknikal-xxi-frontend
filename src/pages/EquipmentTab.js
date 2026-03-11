@@ -611,19 +611,14 @@ function StudioTab() {
                   <label className="form-label small fw-semibold">Server</label>
                   <select className="form-select" value={fc('server_id')} onChange={e => setFc('server_id', e.target.value)}>
                     <option value="">-- Pilih Server --</option>
-                    {servers.map(s => {
+                    {servers.filter(s => {
                       const totalUnit = s.total_unit || 1;
                       const usedCount = items.filter(st => st.server_id === s.id && (!editItem || st.id !== editItem.id)).length;
-                      const sisaUnit = totalUnit - usedCount;
-                      const habis = sisaUnit <= 0;
+                      return (totalUnit - usedCount) > 0;
+                    }).map(s => {
                       const kap = s.kapasitas_server ? `${s.kapasitas_server} GB` : null;
-                      const label = [s.type_server.toUpperCase(), kap, `${sisaUnit} UNIT`].filter(Boolean).join(' | ');
-                      return (
-                        <option key={s.id} value={s.id} disabled={habis}
-                          style={habis ? { textDecoration: 'line-through' } : {}}>
-                          {label}
-                        </option>
-                      );
+                      const label = [s.type_server.toUpperCase(), kap].filter(Boolean).join(' | ');
+                      return <option key={s.id} value={s.id}>{label}</option>;
                     })}
                   </select>
                   {servers.length === 0 && <div className="form-text text-warning">Belum ada data server. Tambah di tab Server dulu.</div>}
