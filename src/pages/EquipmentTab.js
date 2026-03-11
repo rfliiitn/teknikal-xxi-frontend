@@ -511,11 +511,7 @@ function StudioTab() {
   };
 
   const getProjectorLabel = (id) => projectors.find(p => p.id === id)?.type_projector || '-';
-  const getServerLabel = (id, unit) => {
-    const sv = servers.find(s => s.id === id);
-    if (!sv) return '-';
-    return unit ? `${sv.type_server.toUpperCase()} (Unit ${unit})` : sv.type_server.toUpperCase();
-  };
+  const getServerLabel = (id) => { const sv = servers.find(s => s.id === id); if (!sv) return '-'; const kap = sv.kapasitas_server ? ` | ${sv.kapasitas_server} GB` : ''; return `${sv.type_server.toUpperCase()}${kap}`; };
   const getAcLabels = (ids) => {
     if (!ids || ids.length === 0) return '-';
     return ids.map(id => { const a = acList.find(x => x.id === id); if (!a) return '?'; const detail = [a.type_ac, a.total_pk ? a.total_pk + ' PK' : null].filter(Boolean).join(' | '); return `${a.merk_ac}${detail ? ' (' + detail + ')' : ''}`; }).join(', ');
@@ -556,7 +552,7 @@ function StudioTab() {
                     <td>{i + 1}</td>
                     <td>{s.studio_number}</td>
                     <td>{getProjectorLabel(s.projector_id)}</td>
-                    <td>{getServerLabel(s.server_id, s.server_unit)}</td>
+                    <td>{getServerLabel(s.server_id)}</td>
                     <td>{s.kapasitas_kursi || '-'}</td>
                     <td>{s.ukuran_layar ? `${s.ukuran_layar}m` : '-'}</td>
                     <td>{s.type_layar || '-'}</td>
