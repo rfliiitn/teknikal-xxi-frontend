@@ -486,7 +486,17 @@ function StudioTab() {
         ukuran_layar: toNum(form.ukuran_layar),
         projector_id: form.projector_id || null,
         server_id: form.server_id || null,
-        server_unit: form.server_unit ? parseInt(form.server_unit) : null,
+        server_unit: (() => {
+          if (!form.server_id) return null;
+          const sv = servers.find(s => s.id === form.server_id);
+          const totalUnit = sv?.total_unit || 1;
+          const usedUnits = items
+            .filter(st => st.server_id === form.server_id && (!editItem || st.id !== editItem.id))
+            .map(st => st.server_unit).filter(Boolean);
+          // Assign unit terkecil yang belum dipakai
+          for (let u = 1; u <= totalUnit; u++) { if (!usedUnits.includes(u)) return u; }
+          return null;
+        })(),
       };
       if (editItem) await API.put(`/studio/${editItem.id}`, payload);
       else await API.post('/studio', payload);
@@ -599,35 +609,26 @@ function StudioTab() {
                 </div>
                 <div className="col-md-6">
                   <label className="form-label small fw-semibold">Server</label>
-                  <select className="form-select" value={fc('server_id')} onChange={e => { setFc('server_id', e.target.value); setFc('server_unit', ''); }}>
+                  <select className="form-select" value={fc('server_id')} onChange={e => setFc('server_id', e.target.value)}>
                     <option value="">-- Pilih Server --</option>
-                    {servers.map(s => <option key={s.id} value={s.id}>{s.type_server.toUpperCase()}</option>)}
+                    {servers.map(s => {
+                      const totalUnit = s.total_unit || 1;
+                      const usedCount = items.filter(st => st.server_id === s.id && (!editItem || st.id !== editItem.id)).length;
+                      const sisaUnit = totalUnit - usedCount;
+                      const habis = sisaUnit <= 0;
+                      const kap = s.kapasitas_server ? `${s.kapasitas_server} GB` : null;
+                      const label = [s.type_server.toUpperCase(), kap, `${sisaUnit} UNIT`].filter(Boolean).join(' | ');
+                      return (
+                        <option key={s.id} value={s.id} disabled={habis}
+                          style={habis ? { textDecoration: 'line-through' } : {}}>
+                          {label}
+                        </option>
+                      );
+                    })}
                   </select>
                   {servers.length === 0 && <div className="form-text text-warning">Belum ada data server. Tambah di tab Server dulu.</div>}
                 </div>
-                {fc('server_id') && (() => {
-                  const sv = servers.find(s => s.id === fc('server_id'));
-                  const totalUnit = sv?.total_unit || 1;
-                  // Unit yang sudah dipakai studio lain (exclude studio yang sedang diedit)
-                  const usedUnits = items
-                    .filter(st => st.server_id === fc('server_id') && (!editItem || st.id !== editItem.id))
-                    .map(st => st.server_unit).filter(Boolean);
-                  const unitOptions = Array.from({ length: totalUnit }, (_, i) => i + 1);
-                  return (
-                    <div className="col-md-6">
-                      <label className="form-label small fw-semibold">Unit ke-</label>
-                      <select className="form-select" value={fc('server_unit')} onChange={e => setFc('server_unit', e.target.value)}>
-                        <option value="">-- Pilih Unit --</option>
-                        {unitOptions.map(u => (
-                          <option key={u} value={u} disabled={usedUnits.includes(u)}>
-                            Unit {u}{usedUnits.includes(u) ? ' (sudah dipakai)' : ''}
-                          </option>
-                        ))}
-                      </select>
-                      {usedUnits.length >= totalUnit && <div className="form-text text-danger">Semua unit sudah dipakai.</div>}
-                    </div>
-                  );
-                })()}
+
                 <div className="col-12">
                   <label className="form-label small fw-semibold">AC <span className="text-muted fw-normal">(bisa pilih lebih dari 1)</span></label>
                   {acList.length === 0 ? (
