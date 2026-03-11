@@ -209,7 +209,7 @@ function ServerTab() {
         {loading ? <div className="text-center py-4"><div className="spinner-border text-primary" /></div> : (
           <div className="table-responsive">
             <table className="table table-bordered table-sm">
-              <thead><tr><th>No</th><th>Type Server</th><th>Kapasitas</th><th>Total Unit</th><th>Keterangan</th><th>Aksi</th></tr></thead>
+              <thead><tr><th>No</th><th>Type Server</th><th>Kapasitas</th><th>Keterangan</th><th>Aksi</th></tr></thead>
               <tbody style={{ textTransform: 'uppercase' }}>
                 {filtered.length === 0 ? <tr><td colSpan={6} className="text-center text-muted py-3">Tidak ada data</td></tr>
                 : filtered.map((s, i) => (
@@ -597,7 +597,7 @@ function StudioTab() {
                 </div>
                 <div className="col-md-2">
                   <label className="form-label small fw-semibold">Type Layar</label>
-                  <input className="form-control" placeholder="Flat" value={fc('type_layar')} onChange={e => setFc('type_layar', e.target.value)} />
+                  <input className="form-control" placeholder="Misal: PERLUX 180" value={fc('type_layar')} onChange={e => setFc('type_layar', e.target.value)} />
                 </div>
                 <div className="col-md-6">
                   <label className="form-label small fw-semibold">Projector</label>
