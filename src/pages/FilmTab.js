@@ -136,11 +136,7 @@ const buildPDF = (films, outletName, settings, servers) => {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
 
-  // Label atas — rata tengah kolom masing-masing
-  doc.text('YANG MEMBUAT', leftCx, sectionY, { align: 'center' });
-  doc.text('MENGETAHUI', rightCx, sectionY, { align: 'center' });
-
-  // NOTE di tengah — rata kiri dari noteX - offset
+  // NOTE di tengah dulu — rata kiri dari noteX - offset
   const noteStartX = noteX - 32;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
@@ -184,7 +180,7 @@ const buildPDF = (films, outletName, settings, servers) => {
   });
 
   // Garis tanda tangan - dinamis berdasarkan jumlah server lines
-  const lineY = sectionY + 13 + serverLines.length * 5 + 8;
+  const lineY = sectionY + 11 + serverLines.length * 5 + 6;
   doc.setLineWidth(0.4);
   doc.line(leftLineX, lineY, leftLineX + 54, lineY);
   doc.line(rightLineX, lineY, rightLineX + 54, lineY);
@@ -611,7 +607,7 @@ export default function FilmTab({ settings, outletName }) {
                       const label = sv.is_aam ? sv.type_server.toUpperCase()
                         : (sv.studio_number ? `STD ${sv.studio_number} - ${sv.type_server.toUpperCase()}` : sv.type_server.toUpperCase());
                       const kap = parseFloat(sv.kapasitas_server) || 0;
-                      const terpakai = parseFloat(serverInputs[sv._rowKey || sv.id]) || 0;
+                      const terpakai = parseFloat(serverInputs[sv.id]) || 0;
                       const sisa = kap > 0 ? (kap - terpakai).toFixed(0) : null;
                       const persen = kap > 0 ? Math.round(((kap - terpakai) / kap) * 100) : null;
                       return (
