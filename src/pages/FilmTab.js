@@ -269,9 +269,9 @@ export default function FilmTab({ settings, outletName }) {
   const fetchEquipments = async () => {
     try {
       const [inStudio, all] = await Promise.all([API.get('/server/in-studio'), API.get('/server')]);
-      setServers(inStudio.data);
-      setAllServers(all.data);
-    } catch {}
+      setServers(inStudio.data || []);
+      setAllServers(all.data || []);
+    } catch (err) { console.error('fetchEquipments error:', err); }
   };
 
   useEffect(() => { fetchFilms(); fetchEquipments(); }, []);
