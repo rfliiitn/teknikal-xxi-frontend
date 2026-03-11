@@ -110,7 +110,8 @@ const buildPDF = (films, outletName, settings, servers) => {
 
   // ── Section bawah: NOTE + Tanda Tangan ──
   const estServerLines = (servers && servers.length > 0) ? servers.length : 1;
-  const neededHeight = 20 + estServerLines * 5 + 70;
+  // Hitung tinggi yang dibutuhkan: NOTE(16) + serverLines + gap(6) + ttd(25) + keterangan(30)
+  const neededHeight = 16 + estServerLines * 4.5 + 6 + 25 + 30;
   let sectionY;
   if (finalY + neededHeight > pageHeight - 10) {
     doc.addPage();
@@ -119,10 +120,11 @@ const buildPDF = (films, outletName, settings, servers) => {
     sectionY = finalY + 8;
   }
 
-  // X positions
+  // X positions — note dipersempit di kolom tengah saja
   const leftCx     = pageWidth * 0.17;
   const leftLineX  = leftCx - 27;
-  const noteStartX = pageWidth / 2 - 32;
+  const noteStartX = pageWidth * 0.38;   // mulai dari 38% width
+  const noteMaxW   = pageWidth * 0.28;   // lebar note max 28% (tidak nyebrang ke TTD kanan)
   const rightCx    = pageWidth * 0.83;
   const rightLineX = rightCx - 27;
 
@@ -148,22 +150,24 @@ const buildPDF = (films, outletName, settings, servers) => {
 
   // ── NOTE (tengah) ──
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
+  doc.setFontSize(8);
   doc.text('NOTE :', noteStartX, sectionY);
-  doc.text('SISA KAPASITAS PENYIMPANAN SERVER', noteStartX, sectionY + 5);
+  doc.text('SISA KAPASITAS PENYIMPANAN SERVER', noteStartX, sectionY + 4.5);
   doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
   serverLines.forEach(({ label, val }, idx) => {
-    const y = sectionY + 11 + idx * 5;
+    const y = sectionY + 9.5 + idx * 4.5;
+    doc.setFont('helvetica', 'normal');
     doc.text('- ', noteStartX, y);
     doc.setFont('helvetica', 'bold');
-    doc.text(label, noteStartX + 4, y);
+    doc.text(label, noteStartX + 3, y);
     doc.setFont('helvetica', 'normal');
-    if (val) doc.text(` : ${val}`, noteStartX + 4 + doc.getTextWidth(label), y);
+    if (val) doc.text(` : ${val}`, noteStartX + 3 + doc.getTextWidth(label), y);
   });
 
-  // ── Garis & label tanda tangan (sejajar dengan area note) ──
-  const lineY = sectionY + 11 + serverLines.length * 5 + 4;
-  const labelY = sectionY;   // YANG MEMBUAT / MENGETAHUI sejajar dengan NOTE
+  // ── Garis & label tanda tangan ──
+  const lineY = sectionY + 9.5 + serverLines.length * 4.5 + 4;
+  const labelY = sectionY;
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
