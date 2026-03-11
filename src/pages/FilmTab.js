@@ -108,70 +108,52 @@ const buildPDF = (films, outletName, settings, servers) => {
 
   const finalY = doc.lastAutoTable.finalY;
 
-  // ── Hitung ruang yang dibutuhkan untuk section bawah ──
+  // ── Section bawah: NOTE + Tanda Tangan ──
   const estServerLines = (servers && servers.length > 0) ? servers.length : 1;
-  // section: label(10) + note(16 + server*5) + garis(25) + nama(10) + keterangan(30) = ~90mm + server
-  const neededSpace = 70 + estServerLines * 5 + 50;
-
-  // Kalau tidak muat, pindah ke halaman baru
+  const neededHeight = 20 + estServerLines * 5 + 70;
   let sectionY;
-  if (finalY + neededSpace > pageHeight - 10) {
+  if (finalY + neededHeight > pageHeight - 10) {
     doc.addPage();
     sectionY = 20;
   } else {
     sectionY = finalY + 8;
   }
 
-  // Kolom kiri: center di 1/4 kiri halaman
-  const leftCx  = pageWidth * 0.17;   // pusat kolom kiri
-  const leftLineX = leftCx - 27;      // mulai garis (54mm lebar)
-
-  // Kolom tengah: center halaman
-  const noteX = pageWidth / 2;
-
-  // Kolom kanan: center di 3/4 kanan halaman
-  const rightCx   = pageWidth * 0.83; // pusat kolom kanan
+  // X positions
+  const leftCx     = pageWidth * 0.17;
+  const leftLineX  = leftCx - 27;
+  const noteStartX = pageWidth / 2 - 32;
+  const rightCx    = pageWidth * 0.83;
   const rightLineX = rightCx - 27;
 
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-
-  // NOTE di tengah dulu — rata kiri dari noteX - offset
-  const noteStartX = noteX - 32;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.text('NOTE :', noteStartX, sectionY);
-  doc.text('SISA KAPASITAS PENYIMPANAN SERVER', noteStartX, sectionY + 5);
-
-  // Daftar server
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
+  // ── Build server lines ──
   const serverLines = [];
   if (servers && servers.length > 0) {
-    [...servers].sort((a, b) => { if (a.is_aam) return -1; if (b.is_aam) return 1; return String(a.studio_number || '').localeCompare(String(b.studio_number || ''), undefined, { numeric: true }); }).forEach(sv => {
+    [...servers].sort((a, b) => {
+      if (a.is_aam) return -1; if (b.is_aam) return 1;
+      return String(a.studio_number || '').localeCompare(String(b.studio_number || ''), undefined, { numeric: true });
+    }).forEach(sv => {
       const kap = parseFloat(sv.kapasitas_server) || 0;
       const terpakai = parseFloat(sv.size_terpakai) || 0;
       const sisa = kap > 0 ? kap - terpakai : null;
       const persen = kap > 0 ? Math.round((sisa / kap) * 100) : null;
-      const sisaStr = sisa !== null
-        ? `${sisa.toFixed(0)} GB${persen !== null ? ` (${persen}%)` : ''}`
-        : '-';
-      // AAM Library tanpa prefix STD, server lain pakai studio_number
-      let label;
-      if (sv.is_aam) {
-        label = sv.type_server.toUpperCase();
-      } else {
-        label = sv.studio_number ? `STD ${sv.studio_number} - ${sv.type_server.toUpperCase()}` : sv.type_server.toUpperCase();
-      }
+      const sisaStr = sisa !== null ? `${sisa.toFixed(0)} GB (${persen}%)` : '-';
+      const label = sv.is_aam ? sv.type_server.toUpperCase()
+        : (sv.studio_number ? `STD ${String(sv.studio_number).toUpperCase()} - ${sv.type_server.toUpperCase()}` : sv.type_server.toUpperCase());
       serverLines.push({ label, val: sisaStr });
     });
   } else {
     serverLines.push({ label: 'Tidak ada data server', val: '' });
   }
 
+  // ── NOTE (tengah) ──
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('NOTE :', noteStartX, sectionY);
+  doc.text('SISA KAPASITAS PENYIMPANAN SERVER', noteStartX, sectionY + 5);
+  doc.setFont('helvetica', 'normal');
   serverLines.forEach(({ label, val }, idx) => {
     const y = sectionY + 11 + idx * 5;
-    doc.setFont('helvetica', 'normal');
     doc.text('- ', noteStartX, y);
     doc.setFont('helvetica', 'bold');
     doc.text(label, noteStartX + 4, y);
@@ -179,13 +161,19 @@ const buildPDF = (films, outletName, settings, servers) => {
     if (val) doc.text(` : ${val}`, noteStartX + 4 + doc.getTextWidth(label), y);
   });
 
-  // Garis tanda tangan - dinamis berdasarkan jumlah server lines
-  const lineY = sectionY + 11 + serverLines.length * 5 + 6;
+  // ── Garis & label tanda tangan (sejajar dengan area note) ──
+  const lineY = sectionY + 11 + serverLines.length * 5 + 4;
+  const labelY = sectionY;   // YANG MEMBUAT / MENGETAHUI sejajar dengan NOTE
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.text('YANG MEMBUAT', leftCx, labelY, { align: 'center' });
+  doc.text('MENGETAHUI', rightCx, labelY, { align: 'center' });
+
   doc.setLineWidth(0.4);
   doc.line(leftLineX, lineY, leftLineX + 54, lineY);
   doc.line(rightLineX, lineY, rightLineX + 54, lineY);
 
-  // Nama & jabatan — rata tengah kolom masing-masing
   const nameY = lineY + 5;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
@@ -198,30 +186,25 @@ const buildPDF = (films, outletName, settings, servers) => {
   doc.setFont('helvetica', 'normal');
   doc.text((settings?.yang_mengetahui_divisi || '').toUpperCase(), rightCx, nameY + 5, { align: 'center' });
 
-  // ── KETERANGAN WARNA — tepat di bawah tanda tangan "Yang Membuat" ──
+  // ── KETERANGAN WARNA ──
   const ketY = nameY + 12;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8.5);
-  doc.setTextColor(0,0,0);
+  doc.setTextColor(0, 0, 0);
   doc.text('KETERANGAN :', leftLineX, ketY);
-
   const tblX = leftLineX;
   const tblY = ketY + 2;
   const col1W = 28; const col2W = 34; const rowH = 7;
-  const rows = [
-    { label: 'FONT HITAM', ket: 'BELUM TAYANG', color: [0,0,0] },
-    { label: 'FONT HIJAU', ket: 'SEDANG TAYANG', color: [0,128,0] },
-    { label: 'FONT MERAH', ket: 'SUDAH TAYANG', color: [200,0,0] },
+  const ketRows = [
+    { label: 'FONT HITAM',  ket: 'BELUM TAYANG',  color: [0, 0, 0] },
+    { label: 'FONT HIJAU',  ket: 'SEDANG TAYANG', color: [0, 128, 0] },
+    { label: 'FONT MERAH',  ket: 'SUDAH TAYANG',  color: [200, 0, 0] },
   ];
-
   doc.setLineWidth(0.3);
-  doc.rect(tblX, tblY, col1W + col2W, rowH * rows.length);
-  doc.line(tblX + col1W, tblY, tblX + col1W, tblY + rowH * rows.length);
-  rows.forEach((_, i) => {
-    if (i > 0) doc.line(tblX, tblY + rowH * i, tblX + col1W + col2W, tblY + rowH * i);
-  });
-
-  rows.forEach((r, i) => {
+  doc.rect(tblX, tblY, col1W + col2W, rowH * ketRows.length);
+  doc.line(tblX + col1W, tblY, tblX + col1W, tblY + rowH * ketRows.length);
+  ketRows.forEach((_, i) => { if (i > 0) doc.line(tblX, tblY + rowH * i, tblX + col1W + col2W, tblY + rowH * i); });
+  ketRows.forEach((r, i) => {
     const y = tblY + rowH * i + rowH * 0.65;
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...r.color);
@@ -229,8 +212,8 @@ const buildPDF = (films, outletName, settings, servers) => {
     doc.setFont('helvetica', 'normal');
     doc.text(r.ket, tblX + col1W + 2, y);
   });
+  doc.setTextColor(0, 0, 0);
 
-  doc.setTextColor(0,0,0);
   return doc;
 };
 
