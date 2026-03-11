@@ -354,9 +354,20 @@ export default function FilmTab({ settings, outletName }) {
     setSaving(true);
     try {
       await Promise.all(
-        Object.entries(serverInputs).map(([id, val]) =>
-          API.put(`/server/${id}`, { size_terpakai: val !== '' ? parseFloat(val) : null })
-        )
+        servers.map(sv => {
+          const key = sv.studio_server_key || sv.id;
+          const val = serverInputs[key];
+          if (sv.is_aam) {
+            return API.put(`/server/${sv.id}`, { size_terpakai: val !== '' && val !== undefined ? parseFloat(val) : null });
+          } else {
+            // Update size_terpakai_unit di studios row yang sesuai
+            return API.put(`/server/${sv.id}/unit`, {
+              studio_number: sv.studio_number,
+              server_unit: sv.server_unit,
+              size_terpakai_unit: val !== '' && val !== undefined ? parseFloat(val) : null,
+            });
+          }
+        })
       );
       await fetchEquipments();
       setShowServerUpdate(false);
@@ -396,7 +407,7 @@ export default function FilmTab({ settings, outletName }) {
             <button className="btn btn-outline-secondary btn-sm" onClick={() => setShowTrash(true)}><i className="bi bi-trash2 me-1" />Sampah</button>
             <button className="btn btn-outline-dark btn-sm" onClick={handlePreviewPDF}><i className="bi bi-eye me-1" />Preview PDF</button>
             <button className="btn btn-outline-secondary btn-sm" onClick={handleDownloadPDF}><i className="bi bi-download me-1" />Download PDF</button>
-            <button className="btn btn-outline-info btn-sm" onClick={() => { const init = {}; servers.forEach(sv => { if (!(sv.id in init)) init[sv.id] = sv.size_terpakai ?? ''; }); setServerInputs(init); setShowServerUpdate(true); }}><i className="bi bi-hdd me-1" />Update Server</button>
+            <button className="btn btn-outline-info btn-sm" onClick={() => { const init = {}; servers.forEach(sv => { const key = sv.studio_server_key || sv.id; init[key] = sv.size_terpakai ?? ''; }); setServerInputs(init); setShowServerUpdate(true); }}><i className="bi bi-hdd me-1" />Update Server</button>
           </div>
         )}
 

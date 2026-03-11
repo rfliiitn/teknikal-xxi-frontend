@@ -439,7 +439,7 @@ function StudioTab() {
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editItem, setEditItem] = useState(null);
-  const [form, setForm] = useState({ studio_number: '', projector_id: '', server_id: '', ac_ids: [], kapasitas_kursi: '', ukuran_layar: '', type_layar: '', keterangan: '' });
+  const [form, setForm] = useState({ studio_number: '', projector_id: '', server_id: '', server_unit: '', ac_ids: [], kapasitas_kursi: '', ukuran_layar: '', type_layar: '', keterangan: '' });
   const [formErr, setFormErr] = useState({});
   const [showTrash, setShowTrash] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -466,10 +466,10 @@ function StudioTab() {
 
   const openAdd = () => {
     setEditItem(null);
-    setForm({ studio_number: '', projector_id: '', server_id: '', ac_ids: [], kapasitas_kursi: '', ukuran_layar: '', type_layar: '', keterangan: '' });
+    setForm({ studio_number: '', projector_id: '', server_id: '', server_unit: '', ac_ids: [], kapasitas_kursi: '', ukuran_layar: '', type_layar: '', keterangan: '' });
     setFormErr({}); setShowForm(true);
   };
-  const openEdit = (item) => { setEditItem(item); setForm({ ...item, ac_ids: item.ac_ids || [] }); setFormErr({}); setShowForm(true); };
+  const openEdit = (item) => { setEditItem(item); setForm({ ...item, ac_ids: item.ac_ids || [], server_unit: item.server_unit ?? '' }); setFormErr({}); setShowForm(true); };
   const closeForm = () => { setShowForm(false); setEditItem(null); };
   const validate = () => { const errs = {}; if (!form.studio_number) errs.studio_number = 'Wajib diisi'; setFormErr(errs); return Object.keys(errs).length === 0; };
 
@@ -486,6 +486,7 @@ function StudioTab() {
         ukuran_layar: toNum(form.ukuran_layar),
         projector_id: form.projector_id || null,
         server_id: form.server_id || null,
+        server_unit: form.server_unit ? parseInt(form.server_unit) : null,
       };
       if (editItem) await API.put(`/studio/${editItem.id}`, payload);
       else await API.post('/studio', payload);
@@ -500,7 +501,11 @@ function StudioTab() {
   };
 
   const getProjectorLabel = (id) => projectors.find(p => p.id === id)?.type_projector || '-';
-  const getServerLabel = (id) => servers.find(s => s.id === id)?.type_server || '-';
+  const getServerLabel = (id, unit) => {
+    const sv = servers.find(s => s.id === id);
+    if (!sv) return '-';
+    return unit ? `${sv.type_server.toUpperCase()} (Unit ${unit})` : sv.type_server.toUpperCase();
+  };
   const getAcLabels = (ids) => {
     if (!ids || ids.length === 0) return '-';
     return ids.map(id => { const a = acList.find(x => x.id === id); if (!a) return '?'; const detail = [a.type_ac, a.total_pk ? a.total_pk + ' PK' : null].filter(Boolean).join(' | '); return `${a.merk_ac}${detail ? ' (' + detail + ')' : ''}`; }).join(', ');
@@ -541,7 +546,7 @@ function StudioTab() {
                     <td>{i + 1}</td>
                     <td>{s.studio_number}</td>
                     <td>{getProjectorLabel(s.projector_id)}</td>
-                    <td>{getServerLabel(s.server_id)}</td>
+                    <td>{getServerLabel(s.server_id, s.server_unit)}</td>
                     <td>{s.kapasitas_kursi || '-'}</td>
                     <td>{s.ukuran_layar ? `${s.ukuran_layar}m` : '-'}</td>
                     <td>{s.type_layar || '-'}</td>
@@ -594,12 +599,35 @@ function StudioTab() {
                 </div>
                 <div className="col-md-6">
                   <label className="form-label small fw-semibold">Server</label>
-                  <select className="form-select" value={fc('server_id')} onChange={e => setFc('server_id', e.target.value)}>
+                  <select className="form-select" value={fc('server_id')} onChange={e => { setFc('server_id', e.target.value); setFc('server_unit', ''); }}>
                     <option value="">-- Pilih Server --</option>
                     {servers.map(s => <option key={s.id} value={s.id}>{s.type_server.toUpperCase()}</option>)}
                   </select>
                   {servers.length === 0 && <div className="form-text text-warning">Belum ada data server. Tambah di tab Server dulu.</div>}
                 </div>
+                {fc('server_id') && (() => {
+                  const sv = servers.find(s => s.id === fc('server_id'));
+                  const totalUnit = sv?.total_unit || 1;
+                  // Unit yang sudah dipakai studio lain (exclude studio yang sedang diedit)
+                  const usedUnits = items
+                    .filter(st => st.server_id === fc('server_id') && (!editItem || st.id !== editItem.id))
+                    .map(st => st.server_unit).filter(Boolean);
+                  const unitOptions = Array.from({ length: totalUnit }, (_, i) => i + 1);
+                  return (
+                    <div className="col-md-6">
+                      <label className="form-label small fw-semibold">Unit ke-</label>
+                      <select className="form-select" value={fc('server_unit')} onChange={e => setFc('server_unit', e.target.value)}>
+                        <option value="">-- Pilih Unit --</option>
+                        {unitOptions.map(u => (
+                          <option key={u} value={u} disabled={usedUnits.includes(u)}>
+                            Unit {u}{usedUnits.includes(u) ? ' (sudah dipakai)' : ''}
+                          </option>
+                        ))}
+                      </select>
+                      {usedUnits.length >= totalUnit && <div className="form-text text-danger">Semua unit sudah dipakai.</div>}
+                    </div>
+                  );
+                })()}
                 <div className="col-12">
                   <label className="form-label small fw-semibold">AC <span className="text-muted fw-normal">(bisa pilih lebih dari 1)</span></label>
                   {acList.length === 0 ? (
