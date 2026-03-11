@@ -569,16 +569,16 @@ function StudioTab() {
               <div className="row g-3">
                 <div className="col-md-3">
                   <label className="form-label small fw-semibold">Studio # *</label>
-                  <input type="number" className={cls('studio_number')} placeholder="1" value={fc('studio_number')} onChange={e => setFc('studio_number', e.target.value)} />
+                  <input type="text" className={cls('studio_number')} placeholder="1" value={fc('studio_number')} onChange={e => setFc('studio_number', e.target.value)} />
                   {formErr.studio_number && <div className="invalid-feedback">{formErr.studio_number}</div>}
                 </div>
                 <div className="col-md-4">
                   <label className="form-label small fw-semibold">Kapasitas Kursi</label>
-                  <input type="number" className="form-control" placeholder="Contoh: 150" value={fc('kapasitas_kursi')} onChange={e => setFc('kapasitas_kursi', e.target.value)} />
+                  <input type="text" className="form-control" placeholder="Contoh: 150" value={fc('kapasitas_kursi')} onChange={e => setFc('kapasitas_kursi', e.target.value)} />
                 </div>
                 <div className="col-md-3">
                   <label className="form-label small fw-semibold">Ukuran Layar (m)</label>
-                  <input type="number" step="0.1" className="form-control" placeholder="Contoh: 12.5" value={fc('ukuran_layar')} onChange={e => setFc('ukuran_layar', e.target.value)} />
+                  <input type="text" className="form-control" placeholder="Contoh: 12.5" value={fc('ukuran_layar')} onChange={e => setFc('ukuran_layar', e.target.value)} />
                 </div>
                 <div className="col-md-2">
                   <label className="form-label small fw-semibold">Type Layar</label>

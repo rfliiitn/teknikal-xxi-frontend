@@ -152,7 +152,7 @@ const buildPDF = (films, outletName, settings, servers) => {
   doc.setFontSize(9);
   const serverLines = [];
   if (servers && servers.length > 0) {
-    servers.forEach(sv => {
+    [...servers].sort((a, b) => { if (a.is_aam) return -1; if (b.is_aam) return 1; return (a.studio_number || 999) - (b.studio_number || 999); }).forEach(sv => {
       const kap = parseFloat(sv.kapasitas_server) || 0;
       const terpakai = parseFloat(sv.size_terpakai) || 0;
       const sisa = kap > 0 ? kap - terpakai : null;
