@@ -152,7 +152,7 @@ const buildPDF = (films, outletName, settings, servers) => {
   doc.setFontSize(9);
   const serverLines = [];
   if (servers && servers.length > 0) {
-    [...servers].sort((a, b) => { if (a.is_aam) return -1; if (b.is_aam) return 1; return (a.studio_number || 999) - (b.studio_number || 999); }).forEach(sv => {
+    [...servers].sort((a, b) => { if (a.is_aam) return -1; if (b.is_aam) return 1; return String(a.studio_number || '').localeCompare(String(b.studio_number || ''), undefined, { numeric: true }); }).forEach(sv => {
       const kap = parseFloat(sv.kapasitas_server) || 0;
       const terpakai = parseFloat(sv.size_terpakai) || 0;
       const sisa = kap > 0 ? kap - terpakai : null;
@@ -396,7 +396,7 @@ export default function FilmTab({ settings, outletName }) {
             <button className="btn btn-outline-secondary btn-sm" onClick={() => setShowTrash(true)}><i className="bi bi-trash2 me-1" />Sampah</button>
             <button className="btn btn-outline-dark btn-sm" onClick={handlePreviewPDF}><i className="bi bi-eye me-1" />Preview PDF</button>
             <button className="btn btn-outline-secondary btn-sm" onClick={handleDownloadPDF}><i className="bi bi-download me-1" />Download PDF</button>
-            <button className="btn btn-outline-info btn-sm" onClick={() => { const init = {}; servers.forEach(sv => { init[sv.id] = sv.size_terpakai ?? ''; }); setServerInputs(init); setShowServerUpdate(true); }}><i className="bi bi-hdd me-1" />Update Server</button>
+            <button className="btn btn-outline-info btn-sm" onClick={() => { const init = {}; servers.forEach(sv => { if (!(sv.id in init)) init[sv.id] = sv.size_terpakai ?? ''; }); setServerInputs(init); setShowServerUpdate(true); }}><i className="bi bi-hdd me-1" />Update Server</button>
           </div>
         )}
 
