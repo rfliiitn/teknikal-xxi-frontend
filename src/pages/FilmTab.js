@@ -588,7 +588,7 @@ export default function FilmTab({ settings, outletName }) {
                 <button className="btn-close" onClick={() => setShowServerUpdate(false)} />
               </div>
               <div className="modal-body">
-                {allServers.length === 0 ? (
+                {(allServers.length === 0 && servers.length === 0) ? (
                   <div className="alert alert-warning">Belum ada data server. Tambah di tab Equipment &gt; Data Server terlebih dahulu.</div>
                 ) : (
                   <div className="row g-2">
