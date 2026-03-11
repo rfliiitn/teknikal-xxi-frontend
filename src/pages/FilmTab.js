@@ -111,7 +111,7 @@ const buildPDF = (films, outletName, settings, servers) => {
   // ── Section bawah: NOTE + Tanda Tangan ──
   const estServerLines = (servers && servers.length > 0) ? servers.length : 1;
   // Hitung tinggi yang dibutuhkan: NOTE(16) + serverLines + gap(6) + ttd(25) + keterangan(30)
-  const neededHeight = 16 + estServerLines * 4.5 + 6 + 25 + 30;
+  const neededHeight = 16 + estServerLines * 8 + 6 + 25 + 30;
   let sectionY;
   if (finalY + neededHeight > pageHeight - 10) {
     doc.addPage();
@@ -150,23 +150,27 @@ const buildPDF = (films, outletName, settings, servers) => {
 
   // ── NOTE (tengah) ──
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.text('NOTE :', noteStartX, sectionY);
-  doc.text('SISA KAPASITAS PENYIMPANAN SERVER', noteStartX, sectionY + 4.5);
-  doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.5);
-  serverLines.forEach(({ label, val }, idx) => {
-    const y = sectionY + 9.5 + idx * 4.5;
-    doc.setFont('helvetica', 'normal');
-    doc.text('- ', noteStartX, y);
+  doc.text('NOTE :', noteStartX, sectionY);
+  doc.text('SISA KAPASITAS PENYIMPANAN SERVER', noteStartX, sectionY + 4);
+  doc.setFontSize(7);
+  // Tiap server: label bold baris 1, val normal baris 2 (indent)
+  let noteOffsetY = sectionY + 8;
+  serverLines.forEach(({ label, val }) => {
     doc.setFont('helvetica', 'bold');
-    doc.text(label, noteStartX + 3, y);
-    doc.setFont('helvetica', 'normal');
-    if (val) doc.text(` : ${val}`, noteStartX + 3 + doc.getTextWidth(label), y);
+    doc.text(`- ${label}`, noteStartX, noteOffsetY);
+    noteOffsetY += 3.8;
+    if (val) {
+      doc.setFont('helvetica', 'normal');
+      doc.text(`  : ${val}`, noteStartX + 3, noteOffsetY);
+      noteOffsetY += 4;
+    } else {
+      noteOffsetY += 0.5;
+    }
   });
 
   // ── Garis & label tanda tangan ──
-  const lineY = sectionY + 9.5 + serverLines.length * 4.5 + 4;
+  const lineY = noteOffsetY + 3;
   const labelY = sectionY;
 
   doc.setFont('helvetica', 'normal');
