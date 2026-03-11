@@ -111,7 +111,7 @@ const buildPDF = (films, outletName, settings, servers) => {
   // ── Hitung ruang yang dibutuhkan untuk section bawah ──
   const estServerLines = (servers && servers.length > 0) ? servers.length : 1;
   // section: label(10) + note(16 + server*5) + garis(25) + nama(10) + keterangan(30) = ~90mm + server
-  const neededSpace = 90 + estServerLines * 5;
+  const neededSpace = 70 + estServerLines * 5 + 50;
 
   // Kalau tidak muat, pindah ke halaman baru
   let sectionY;
@@ -183,8 +183,8 @@ const buildPDF = (films, outletName, settings, servers) => {
     if (val) doc.text(` : ${val}`, noteStartX + 4 + doc.getTextWidth(label), y);
   });
 
-  // Garis tanda tangan
-  const lineY = sectionY + 25;
+  // Garis tanda tangan - dinamis berdasarkan jumlah server lines
+  const lineY = sectionY + 11 + serverLines.length * 5 + 6;
   doc.setLineWidth(0.4);
   doc.line(leftLineX, lineY, leftLineX + 54, lineY);
   doc.line(rightLineX, lineY, rightLineX + 54, lineY);
