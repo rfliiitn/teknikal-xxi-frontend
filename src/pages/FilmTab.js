@@ -256,6 +256,7 @@ export default function FilmTab({ settings, outletName }) {
   const [page, setPage] = useState(1);
   const [showServerUpdate, setShowServerUpdate] = useState(false);
   const [servers, setServers] = useState([]);
+  const [allServers, setAllServers] = useState([]);
   const [serverInputs, setServerInputs] = useState({});
   const PER_PAGE = 20;
 
@@ -266,7 +267,11 @@ export default function FilmTab({ settings, outletName }) {
   };
 
   const fetchEquipments = async () => {
-    try { const res = await API.get('/server/in-studio'); setServers(res.data); } catch {}
+    try {
+      const [inStudio, all] = await Promise.all([API.get('/server/in-studio'), API.get('/server')]);
+      setServers(inStudio.data);
+      setAllServers(all.data);
+    } catch {}
   };
 
   useEffect(() => { fetchFilms(); fetchEquipments(); }, []);
@@ -353,20 +358,14 @@ export default function FilmTab({ settings, outletName }) {
   const handleUpdateServer = async () => {
     setSaving(true);
     try {
+      // Deduplicate by server id (server yang sama muncul di 2 studio = 1 update)
+      const unique = {};
+      allServers.forEach(sv => { if (!unique[sv.id]) unique[sv.id] = sv; });
       await Promise.all(
-        servers.map(sv => {
+        Object.values(unique).map(sv => {
           const key = sv.studio_server_key || sv.id;
           const val = serverInputs[key];
-          if (sv.is_aam) {
-            return API.put(`/server/${sv.id}`, { size_terpakai: val !== '' && val !== undefined ? parseFloat(val) : null });
-          } else {
-            // Update size_terpakai_unit di studios row yang sesuai
-            return API.put(`/server/${sv.id}/unit`, {
-              studio_number: sv.studio_number,
-              server_unit: sv.server_unit,
-              size_terpakai_unit: val !== '' && val !== undefined ? parseFloat(val) : null,
-            });
-          }
+          return API.put(`/server/${sv.id}`, { size_terpakai: val !== '' && val !== undefined ? parseFloat(val) : null });
         })
       );
       await fetchEquipments();
@@ -407,7 +406,7 @@ export default function FilmTab({ settings, outletName }) {
             <button className="btn btn-outline-secondary btn-sm" onClick={() => setShowTrash(true)}><i className="bi bi-trash2 me-1" />Sampah</button>
             <button className="btn btn-outline-dark btn-sm" onClick={handlePreviewPDF}><i className="bi bi-eye me-1" />Preview PDF</button>
             <button className="btn btn-outline-secondary btn-sm" onClick={handleDownloadPDF}><i className="bi bi-download me-1" />Download PDF</button>
-            <button className="btn btn-outline-info btn-sm" onClick={() => { const init = {}; servers.forEach(sv => { const key = sv.studio_server_key || sv.id; init[key] = sv.size_terpakai ?? ''; }); setServerInputs(init); setShowServerUpdate(true); }}><i className="bi bi-hdd me-1" />Update Server</button>
+            <button className="btn btn-outline-info btn-sm" onClick={() => { const init = {}; allServers.forEach(sv => { init[sv.id] = sv.size_terpakai ?? ''; }); setServerInputs(init); setShowServerUpdate(true); }}><i className="bi bi-hdd me-1" />Update Server</button>
           </div>
         )}
 
@@ -576,11 +575,11 @@ export default function FilmTab({ settings, outletName }) {
                 <button className="btn-close" onClick={() => setShowServerUpdate(false)} />
               </div>
               <div className="modal-body">
-                {servers.length === 0 ? (
+                {allServers.length === 0 ? (
                   <div className="alert alert-warning">Belum ada data server. Tambah di tab Equipment &gt; Data Server terlebih dahulu.</div>
                 ) : (
                   <div className="row g-2">
-                    {servers.map(sv => {
+                    {allServers.map(sv => {
                       const label = sv.is_aam ? sv.type_server.toUpperCase()
                         : (sv.studio_number ? `STD ${sv.studio_number} - ${sv.type_server.toUpperCase()}` : sv.type_server.toUpperCase());
                       const kap = parseFloat(sv.kapasitas_server) || 0;
@@ -617,7 +616,7 @@ export default function FilmTab({ settings, outletName }) {
               </div>
               <div className="modal-footer">
                 <button className="btn btn-secondary" onClick={() => setShowServerUpdate(false)}>Batal</button>
-                <button className="btn btn-primary" onClick={handleUpdateServer} disabled={servers.length === 0 || saving}>
+                <button className="btn btn-primary" onClick={handleUpdateServer} disabled={allServers.length === 0 || saving}>
                   {saving ? <span className="spinner-border spinner-border-sm me-1" /> : <i className="bi bi-check-lg me-1" />}Update Semua
                 </button>
               </div>
