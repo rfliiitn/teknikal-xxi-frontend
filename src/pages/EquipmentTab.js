@@ -211,16 +211,19 @@ function ServerTab() {
             <table className="table table-bordered table-sm">
               <thead><tr><th>No</th><th>Type Server</th><th>Kapasitas</th><th>Keterangan</th><th>Aksi</th></tr></thead>
               <tbody style={{ textTransform: 'uppercase' }}>
-                {filtered.length === 0 ? <tr><td colSpan={6} className="text-center text-muted py-3">Tidak ada data</td></tr>
+                {filtered.length === 0 ? <tr><td colSpan={5} className="text-center text-muted py-3">Tidak ada data</td></tr>
                 : filtered.map((s, i) => (
                   <tr key={s.id}>
-                    <td>{i + 1}</td><td>{s.type_server}</td>
+                    <td>{i + 1}</td>
+                    <td className="text-start">
+                      {s.is_aam && <span className="badge me-1" style={{background:'#fbbf24',color:'#78350f',fontSize:'0.7rem'}}>AAM</span>}
+                      {s.type_server}
+                    </td>
                     <td>{s.kapasitas_server ? `${s.kapasitas_server} GB` : '-'}</td>
-                    <td>{s.total_unit || '-'}</td>
                     <td className="text-start">{s.keterangan || '-'}</td>
                     <td style={{ whiteSpace: 'nowrap' }} className="action-cell">
                       <button className="btn btn-sm btn-warning me-1 action-btn" onClick={() => openEdit(s)}><i className="bi bi-pencil" /></button>
-                      <button className="btn btn-sm btn-danger action-btn" onClick={() => handleDelete(s.id)}><i className="bi bi-trash" /></button>
+                      {!s.is_aam && <button className="btn btn-sm btn-danger action-btn" onClick={() => handleDelete(s.id)}><i className="bi bi-trash" /></button>}
                     </td>
                   </tr>
                 ))}
