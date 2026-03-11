@@ -110,8 +110,7 @@ const buildPDF = (films, outletName, settings, servers) => {
 
   // ── Section bawah: NOTE + Tanda Tangan ──
   const estServerLines = (servers && servers.length > 0) ? servers.length : 1;
-  // Hitung tinggi yang dibutuhkan: NOTE(16) + serverLines + gap(6) + ttd(25) + keterangan(30)
-  const neededHeight = 16 + estServerLines * 4.5 + 6 + 25 + 30;
+  const neededHeight = 18 + estServerLines * 4.5 + 40;
   let sectionY;
   if (finalY + neededHeight > pageHeight - 10) {
     doc.addPage();
@@ -120,13 +119,12 @@ const buildPDF = (films, outletName, settings, servers) => {
     sectionY = finalY + 8;
   }
 
-  // X positions — note dipersempit di kolom tengah saja
-  const leftCx     = pageWidth * 0.17;
-  const leftLineX  = leftCx - 27;
-  const noteStartX = pageWidth * 0.38;   // mulai dari 38% width
-  const noteMaxW   = pageWidth * 0.28;   // lebar note max 28% (tidak nyebrang ke TTD kanan)
-  const rightCx    = pageWidth * 0.83;
-  const rightLineX = rightCx - 27;
+  // ── Koordinat kolom ──
+  const leftCx    = pageWidth * 0.17;   // ~35mm
+  const leftLineX = leftCx - 27;        // ~8mm
+  const rightCx   = pageWidth * 0.83;   // ~174mm
+  const rightLineX = rightCx - 27;      // ~147mm
+  const noteX     = 72;                 // NOTE mulai 72mm dari kiri
 
   // ── Build server lines ──
   const serverLines = [];
@@ -140,7 +138,8 @@ const buildPDF = (films, outletName, settings, servers) => {
       const sisa = kap > 0 ? kap - terpakai : null;
       const persen = kap > 0 ? Math.round((sisa / kap) * 100) : null;
       const sisaStr = sisa !== null ? `${sisa.toFixed(0)} GB (${persen}%)` : '-';
-      const label = sv.is_aam ? sv.type_server.toUpperCase()
+      const label = sv.is_aam
+        ? sv.type_server.toUpperCase()
         : (sv.studio_number ? `STD ${String(sv.studio_number).toUpperCase()} - ${sv.type_server.toUpperCase()}` : sv.type_server.toUpperCase());
       serverLines.push({ label, val: sisaStr });
     });
@@ -148,40 +147,45 @@ const buildPDF = (films, outletName, settings, servers) => {
     serverLines.push({ label: 'Tidak ada data server', val: '' });
   }
 
-  // ── NOTE (tengah) ──
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7.5);
-  doc.text('NOTE :', noteStartX, sectionY);
-  doc.text('SISA KAPASITAS PENYIMPANAN SERVER', noteStartX, sectionY + 4);
-  doc.setFontSize(7);
-  serverLines.forEach(({ label, val }, idx) => {
-    const y = sectionY + 8.5 + idx * 4.5;
-    doc.setFont('helvetica', 'bold');
-    doc.text(`- ${label}`, noteStartX, y);
-    doc.setFont('helvetica', 'normal');
-    if (val) doc.text(` : ${val}`, noteStartX + doc.getTextWidth(`- ${label}`), y);
-  });
+  // ── Hitung posisi garis TTD berdasarkan tinggi NOTE ──
+  const noteHeaderH = 8.5;  // NOTE + SISA KAPASITAS
+  const noteBodyH   = serverLines.length * 4.5;
+  const lineY       = sectionY + noteHeaderH + noteBodyH + 4;
 
-  // ── Garis & label tanda tangan ──
-  const lineY = sectionY + 8.5 + serverLines.length * 4.5 + 3;
-  const labelY = sectionY;
-
+  // ── Render YANG MEMBUAT (kiri) — label di atas garis ──
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
-  doc.text('YANG MEMBUAT', leftCx, lineY - 15, { align: 'center' });
-  doc.text('MENGETAHUI', rightCx, lineY - 15, { align: 'center' });
+  doc.text('YANG MEMBUAT', leftCx, sectionY, { align: 'center' });
 
+  // ── Render MENGETAHUI (kanan) — label di atas garis ──
+  doc.text('MENGETAHUI', rightCx, sectionY, { align: 'center' });
+
+  // ── Render NOTE (tengah) ──
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.text('NOTE :', noteX, sectionY);
+  doc.text('SISA KAPASITAS PENYIMPANAN SERVER', noteX, sectionY + 4);
+  doc.setFontSize(7);
+  serverLines.forEach(({ label, val }, idx) => {
+    const y = sectionY + noteHeaderH + idx * 4.5;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`- ${label}`, noteX, y);
+    doc.setFont('helvetica', 'normal');
+    if (val) doc.text(` : ${val}`, noteX + doc.getTextWidth(`- ${label}`), y);
+  });
+
+  // ── Garis TTD ──
   doc.setLineWidth(0.4);
   doc.line(leftLineX, lineY, leftLineX + 54, lineY);
   doc.line(rightLineX, lineY, rightLineX + 54, lineY);
 
+  // ── Nama & Jabatan ──
   const nameY = lineY + 5;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.text((settings?.yang_membuat_nama || '').toUpperCase(), leftCx, nameY, { align: 'center' });
   doc.setFont('helvetica', 'normal');
   doc.text((settings?.yang_membuat_divisi || '').toUpperCase(), leftCx, nameY + 5, { align: 'center' });
-
   doc.setFont('helvetica', 'bold');
   doc.text((settings?.yang_mengetahui_nama || '').toUpperCase(), rightCx, nameY, { align: 'center' });
   doc.setFont('helvetica', 'normal');
@@ -197,9 +201,9 @@ const buildPDF = (films, outletName, settings, servers) => {
   const tblY = ketY + 2;
   const col1W = 28; const col2W = 34; const rowH = 7;
   const ketRows = [
-    { label: 'FONT HITAM',  ket: 'BELUM TAYANG',  color: [0, 0, 0] },
-    { label: 'FONT HIJAU',  ket: 'SEDANG TAYANG', color: [0, 128, 0] },
-    { label: 'FONT MERAH',  ket: 'SUDAH TAYANG',  color: [200, 0, 0] },
+    { label: 'FONT HITAM', ket: 'BELUM TAYANG',  color: [0, 0, 0] },
+    { label: 'FONT HIJAU', ket: 'SEDANG TAYANG', color: [0, 128, 0] },
+    { label: 'FONT MERAH', ket: 'SUDAH TAYANG',  color: [200, 0, 0] },
   ];
   doc.setLineWidth(0.3);
   doc.rect(tblX, tblY, col1W + col2W, rowH * ketRows.length);
@@ -215,7 +219,7 @@ const buildPDF = (films, outletName, settings, servers) => {
   });
   doc.setTextColor(0, 0, 0);
 
-  return doc;
+    return doc;
 };
 
 
