@@ -579,7 +579,29 @@ export default function FilmTab({ settings, outletName }) {
                   <div className="alert alert-warning">Belum ada data server. Tambah di tab Equipment &gt; Data Server terlebih dahulu.</div>
                 ) : (
                   <div className="row g-2">
-                    {allServers.map(sv => {
+                    {(() => {
+                        // Expand: tiap studio entry jadi 1 baris, AAM 1 baris di atas
+                        const rows = [];
+                        allServers.forEach(sv => {
+                          if (sv.is_aam) {
+                            rows.push({ ...sv, studio_number: null, _rowKey: sv.id });
+                          } else {
+                            // Ambil semua studio yang pakai server ini
+                            const studioEntries = servers.filter(s => s.id === sv.id);
+                            if (studioEntries.length > 0) {
+                              studioEntries.forEach(e => rows.push({ ...sv, studio_number: e.studio_number, server_unit: e.server_unit, _rowKey: `${sv.id}__${e.studio_number}` }));
+                            } else {
+                              rows.push({ ...sv, studio_number: null, _rowKey: sv.id });
+                            }
+                          }
+                        });
+                        rows.sort((a, b) => {
+                          if (a.is_aam) return -1;
+                          if (b.is_aam) return 1;
+                          return String(a.studio_number || '').localeCompare(String(b.studio_number || ''), undefined, { numeric: true });
+                        });
+                        return rows;
+                      })().map(sv => {
                       const label = sv.is_aam ? sv.type_server.toUpperCase()
                         : (sv.studio_number ? `STD ${sv.studio_number} - ${sv.type_server.toUpperCase()}` : sv.type_server.toUpperCase());
                       const kap = parseFloat(sv.kapasitas_server) || 0;
@@ -587,7 +609,7 @@ export default function FilmTab({ settings, outletName }) {
                       const sisa = kap > 0 ? (kap - terpakai).toFixed(0) : null;
                       const persen = kap > 0 ? Math.round(((kap - terpakai) / kap) * 100) : null;
                       return (
-                        <div key={sv.id} className="col-12">
+                        <div key={sv._rowKey || sv.id} className="col-12">
                           <div className="p-2 rounded" style={{ border: '1px solid var(--border)', background: 'var(--surface-2)' }}>
                             <div className="d-flex justify-content-between align-items-center mb-1">
                               <span className="fw-semibold small" style={{ textTransform: 'uppercase' }}>{label}</span>
