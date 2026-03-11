@@ -35,9 +35,11 @@ function ProjectorTab() {
   const validate = () => { const errs = {}; if (!form.type_projector) errs.type_projector = 'Wajib diisi'; setFormErr(errs); return Object.keys(errs).length === 0; };
   const handleSave = async () => {
     if (!validate()) return; setSaving(true);
+    const toNum = v => (v !== '' && v !== null && v !== undefined) ? parseFloat(v) : null;
+    const payload = { ...form, total_unit: toNum(form.total_unit) };
     try {
-      if (editItem) await API.put(`/projector/${editItem.id}`, form);
-      else await API.post('/projector', form);
+      if (editItem) await API.put(`/projector/${editItem.id}`, payload);
+      else await API.post('/projector', payload);
       toast.success(editItem ? 'Projector berhasil diperbarui' : 'Projector berhasil ditambahkan');
       fetchData(); closeForm();
     } catch { toast.error('Gagal menyimpan data'); }
@@ -170,9 +172,11 @@ function ServerTab() {
   const validate = () => { const errs = {}; if (!form.type_server) errs.type_server = 'Wajib diisi'; setFormErr(errs); return Object.keys(errs).length === 0; };
   const handleSave = async () => {
     if (!validate()) return; setSaving(true);
+    const toNum = v => (v !== '' && v !== null && v !== undefined) ? parseFloat(v) : null;
+    const payload = { ...form, kapasitas_server: toNum(form.kapasitas_server), size_terpakai: toNum(form.size_terpakai), total_unit: toNum(form.total_unit) };
     try {
-      if (editItem) await API.put(`/server/${editItem.id}`, form);
-      else await API.post('/server', form);
+      if (editItem) await API.put(`/server/${editItem.id}`, payload);
+      else await API.post('/server', payload);
       toast.success(editItem ? 'Server berhasil diperbarui' : 'Server berhasil ditambahkan');
       fetchData(); closeForm();
     } catch { toast.error('Gagal menyimpan data'); }
@@ -313,9 +317,11 @@ function AcTab() {
   };
   const handleSave = async () => {
     if (!validate()) return; setSaving(true);
+    const toNum = v => (v !== '' && v !== null && v !== undefined) ? parseFloat(v) : null;
+    const payload = { ...form, total_pk: toNum(form.total_pk), total_unit: toNum(form.total_unit) };
     try {
-      if (editItem) await API.put(`/ac/${editItem.id}`, form);
-      else await API.post('/ac', form);
+      if (editItem) await API.put(`/ac/${editItem.id}`, payload);
+      else await API.post('/ac', payload);
       toast.success(editItem ? 'AC berhasil diperbarui' : 'AC berhasil ditambahkan');
       fetchData(); closeForm();
     } catch { toast.error('Gagal menyimpan data'); }
@@ -472,11 +478,12 @@ function StudioTab() {
   const handleSave = async () => {
     if (!validate()) return; setSaving(true);
     try {
+      const toNum = v => (v !== '' && v !== null && v !== undefined) ? parseFloat(v) : null;
       const payload = {
         ...form,
         studio_number: parseInt(form.studio_number),
-        kapasitas_kursi: form.kapasitas_kursi ? parseInt(form.kapasitas_kursi) : null,
-        ukuran_layar: form.ukuran_layar ? parseFloat(form.ukuran_layar) : null,
+        kapasitas_kursi: toNum(form.kapasitas_kursi),
+        ukuran_layar: toNum(form.ukuran_layar),
         projector_id: form.projector_id || null,
         server_id: form.server_id || null,
       };
