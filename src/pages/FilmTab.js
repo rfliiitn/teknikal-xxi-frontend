@@ -359,15 +359,23 @@ export default function FilmTab({ settings, outletName }) {
     setSaving(true);
     try {
       // Deduplicate by server id (server yang sama muncul di 2 studio = 1 update)
-      const unique = {};
-      allServers.forEach(sv => { if (!unique[sv.id]) unique[sv.id] = sv; });
-      await Promise.all(
-        Object.values(unique).map(sv => {
-          const key = sv.studio_server_key || sv.id;
-          const val = serverInputs[key];
-          return API.put(`/server/${sv.id}`, { size_terpakai: val !== '' && val !== undefined ? parseFloat(val) : null });
-        })
-      );
+      const promises = [];
+      // AAM: update langsung ke servers table
+      allServers.filter(sv => sv.is_aam).forEach(sv => {
+        const val = serverInputs[sv.id];
+        promises.push(API.put(`/server/${sv.id}`, { size_terpakai: val !== '' && val !== undefined ? parseFloat(val) : null }));
+      });
+      // Non-AAM: update size_terpakai_unit di studios per studio row
+      servers.filter(sv => !sv.is_aam).forEach(sv => {
+        const key = sv.studio_server_key || sv.id;
+        const val = serverInputs[key];
+        promises.push(API.put(`/server/${sv.id}/unit`, {
+          studio_number: sv.studio_number,
+          server_unit: sv.server_unit,
+          size_terpakai_unit: val !== '' && val !== undefined ? parseFloat(val) : null,
+        }));
+      });
+      await Promise.all(promises);
       await fetchEquipments();
       setShowServerUpdate(false);
       toast.success('Kapasitas server berhasil diupdate');
@@ -406,7 +414,12 @@ export default function FilmTab({ settings, outletName }) {
             <button className="btn btn-outline-secondary btn-sm" onClick={() => setShowTrash(true)}><i className="bi bi-trash2 me-1" />Sampah</button>
             <button className="btn btn-outline-dark btn-sm" onClick={handlePreviewPDF}><i className="bi bi-eye me-1" />Preview PDF</button>
             <button className="btn btn-outline-secondary btn-sm" onClick={handleDownloadPDF}><i className="bi bi-download me-1" />Download PDF</button>
-            <button className="btn btn-outline-info btn-sm" onClick={() => { const init = {}; allServers.forEach(sv => { init[sv.id] = sv.size_terpakai ?? ''; }); setServerInputs(init); setShowServerUpdate(true); }}><i className="bi bi-hdd me-1" />Update Server</button>
+            <button className="btn btn-outline-info btn-sm" onClick={() => { const init = {};
+      // allServers tidak punya studio info, pakai servers (in-studio) untuk non-AAM
+      servers.forEach(sv => { init[sv.studio_server_key || sv.id] = sv.size_terpakai ?? ''; });
+      // AAM dari allServers
+      allServers.filter(sv => sv.is_aam).forEach(sv => { init[sv.id] = sv.size_terpakai ?? ''; });
+      setServerInputs(init); setShowServerUpdate(true); }}><i className="bi bi-hdd me-1" />Update Server</button>
           </div>
         )}
 
@@ -580,20 +593,13 @@ export default function FilmTab({ settings, outletName }) {
                 ) : (
                   <div className="row g-2">
                     {(() => {
-                        // Expand: tiap studio entry jadi 1 baris, AAM 1 baris di atas
+                        // AAM dari allServers + non-AAM dari servers (in-studio, per studio row)
                         const rows = [];
-                        allServers.forEach(sv => {
-                          if (sv.is_aam) {
-                            rows.push({ ...sv, studio_number: null, _rowKey: sv.id });
-                          } else {
-                            // Ambil semua studio yang pakai server ini
-                            const studioEntries = servers.filter(s => s.id === sv.id);
-                            if (studioEntries.length > 0) {
-                              studioEntries.forEach(e => rows.push({ ...sv, studio_number: e.studio_number, server_unit: e.server_unit, _rowKey: `${sv.id}__${e.studio_number}` }));
-                            } else {
-                              rows.push({ ...sv, studio_number: null, _rowKey: sv.id });
-                            }
-                          }
+                        allServers.filter(sv => sv.is_aam).forEach(sv => {
+                          rows.push({ ...sv, _rowKey: sv.id });
+                        });
+                        servers.filter(sv => !sv.is_aam).forEach(sv => {
+                          rows.push({ ...sv, _rowKey: sv.studio_server_key || sv.id });
                         });
                         rows.sort((a, b) => {
                           if (a.is_aam) return -1;
@@ -623,8 +629,8 @@ export default function FilmTab({ settings, outletName }) {
                                 type="number"
                                 className="form-control"
                                 placeholder={kap > 0 ? `Maks ${kap} GB` : 'GB'}
-                                value={serverInputs[sv.id] ?? ''}
-                                onChange={e => setServerInputs(s => ({ ...s, [sv.id]: e.target.value }))}
+                                value={serverInputs[sv._rowKey || sv.id] ?? ''}
+                                onChange={e => setServerInputs(s => ({ ...s, [sv._rowKey || sv.id]: e.target.value }))}
                               />
                               <span className="input-group-text">GB</span>
                               {kap > 0 && <span className="input-group-text text-muted">/ {kap} GB</span>}
