@@ -7,7 +7,7 @@ const formatPeriode = () => {
 };
 
 const addSignatureAndSave = (doc, settings, outletName, filename, mode = 'save') => {
-  const finalY = doc.lastAutoTable.finalY + 20;
+  const finalY = doc.lastAutoTable.finalY + 8;
   const pageWidth = doc.internal.pageSize.width;
   const leftX = 20;
   const rightX = pageWidth - 65;
@@ -16,6 +16,13 @@ const addSignatureAndSave = (doc, settings, outletName, filename, mode = 'save')
   doc.setFont('helvetica', 'normal');
   doc.text('YANG MEMBUAT', leftX, finalY);
   doc.text('MENGETAHUI', rightX, finalY);
+
+  if (settings?.ttd_yang_membuat) {
+    try { doc.addImage(settings.ttd_yang_membuat, 'PNG', leftX, finalY + 2, 50, 18); } catch(e) {}
+  }
+  if (settings?.ttd_yang_mengetahui) {
+    try { doc.addImage(settings.ttd_yang_mengetahui, 'PNG', rightX, finalY + 2, 50, 18); } catch(e) {}
+  }
 
   doc.line(leftX, finalY + 22, leftX + 50, finalY + 22);
   doc.line(rightX, finalY + 22, rightX + 50, finalY + 22);
