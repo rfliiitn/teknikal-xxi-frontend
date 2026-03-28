@@ -4,7 +4,7 @@ import TrashModal from '../components/TrashModal';
 import { generateMaintenancePDF, previewMaintenancePDF } from '../utils/pdfUtils';
 import { useToast } from '../context/ToastContext';
 
-const EMPTY_FORM = { tanggal: '', maintenance: '', keterangan: '' };
+const EMPTY_FORM = { tanggal: '', maintenance: '', petugas: '', keterangan: '' };
 
 export default function MaintenanceTab({ settings, outletName }) {
   const toast = useToast();
@@ -171,6 +171,10 @@ export default function MaintenanceTab({ settings, outletName }) {
                     <label className="form-label small fw-semibold">Maintenance *</label>
                     <input className={cls('maintenance')} value={fc('maintenance')} onChange={e => setFc('maintenance', e.target.value)} placeholder="Nama/jenis maintenance" />
                     {formErr.maintenance && <div className="invalid-feedback">{formErr.maintenance}</div>}
+                  </div>
+                  <div className="col-12">
+                    <label className="form-label small fw-semibold">Petugas</label>
+                    <input className="form-control" value={fc('petugas')} onChange={e => setFc('petugas', e.target.value)} placeholder="Nama petugas" />
                   </div>
                   <div className="col-12">
                     <label className="form-label small fw-semibold">Keterangan *</label>

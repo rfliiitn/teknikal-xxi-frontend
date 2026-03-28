@@ -8,7 +8,7 @@ const STATUS_OPTIONS = ['Sudah Diterima', 'Belum Diterima'];
 
 const EMPTY_FORM = {
   nama_barang: '', jumlah_barang: '', tanggal_order: '',
-  tanggal_diterima: '', status_barang: 'Belum Diterima', keterangan: ''
+  tanggal_diterima: '', status_barang: 'Belum Diterima', no_fpkb: '', keterangan: ''
 };
 
 export default function OrderTab({ settings, outletName }) {
@@ -207,6 +207,10 @@ export default function OrderTab({ settings, outletName }) {
                       {STATUS_OPTIONS.map(s => <option key={s}>{s}</option>)}
                     </select>
                     {fErr('status_barang')}
+                  </div>
+                  <div className="col-12">
+                    <label className="form-label small fw-semibold">No FPKB</label>
+                    <input className="form-control" value={fc('no_fpkb')} onChange={e => setFc('no_fpkb', e.target.value)} placeholder="Nomor FPKB" />
                   </div>
                   <div className="col-12">
                     <label className="form-label small fw-semibold">Keterangan</label>
