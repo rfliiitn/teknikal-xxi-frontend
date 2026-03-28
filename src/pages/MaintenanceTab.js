@@ -114,19 +114,21 @@ export default function MaintenanceTab({ settings, outletName }) {
                   <th>No</th>
                   <th>Tanggal</th>
                   <th className="text-start">Maintenance</th>
+                  <th className="text-start">Petugas</th>
                   <th className="text-start">Keterangan</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
               <tbody style={{ textTransform: 'uppercase' }}>
                 {paginated.length === 0 ? (
-                  <tr><td colSpan={6} className="text-center text-muted py-3">Tidak ada data</td></tr>
+                  <tr><td colSpan={7} className="text-center text-muted py-3">Tidak ada data</td></tr>
                 ) : paginated.map((m, i) => (
                   <tr key={m.id}>
                     <td><input type="checkbox" className="form-check-input" checked={selected.includes(m.id)} onChange={() => toggleSelect(m.id)} /></td>
                     <td>{(page - 1) * PER_PAGE + i + 1}</td>
                     <td>{m.tanggal}</td>
                     <td className="text-start">{m.maintenance}</td>
+                    <td className="text-start">{m.petugas || '-'}</td>
                     <td className="text-start">{m.keterangan}</td>
                     <td style={{ whiteSpace: 'nowrap' }} className="action-cell">
                       <button className="btn btn-sm btn-warning me-1 action-btn" onClick={() => openEdit(m)}><i className="bi bi-pencil" /></button>

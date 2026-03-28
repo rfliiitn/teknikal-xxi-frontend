@@ -130,6 +130,7 @@ export default function OrderTab({ settings, outletName }) {
                   <th>Jumlah</th>
                   <th>Tgl Order</th>
                   <th>Tgl Diterima</th>
+                  <th>No FPKB</th>
                   <th>Status</th>
                   <th className="text-start">Keterangan</th>
                   <th>Aksi</th>
@@ -137,7 +138,7 @@ export default function OrderTab({ settings, outletName }) {
               </thead>
               <tbody style={{ textTransform: 'uppercase' }}>
                 {paginated.length === 0 ? (
-                  <tr><td colSpan={9} className="text-center text-muted py-3">Tidak ada data</td></tr>
+                  <tr><td colSpan={10} className="text-center text-muted py-3">Tidak ada data</td></tr>
                 ) : paginated.map((o, i) => (
                   <tr key={o.id} className={rowCls(o.status_barang)}>
                     <td><input type="checkbox" className="form-check-input" checked={selected.includes(o.id)} onChange={() => toggleSelect(o.id)} /></td>
@@ -146,6 +147,7 @@ export default function OrderTab({ settings, outletName }) {
                     <td>{o.jumlah_barang}</td>
                     <td>{o.tanggal_order}</td>
                     <td>{o.tanggal_diterima || '-'}</td>
+                    <td>{o.no_fpkb || '-'}</td>
                     <td><span className={`badge badge-${o.status_barang?.toLowerCase().replace(/ /g, '-')}`}>{o.status_barang}</span></td>
                     <td className="text-start">{o.keterangan || '-'}</td>
                     <td style={{ whiteSpace: 'nowrap' }} className="action-cell">
