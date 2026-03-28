@@ -216,7 +216,7 @@ function ServerTab() {
                   <tr key={s.id}>
                     <td>{i + 1}</td>
                     <td className="text-start">
-                      {s.is_aam && <span className="badge me-1" style={{background:'#fbbf24',color:'#78350f',fontSize:'0.7rem'}}>AAM</span>}
+                      {s.is_aam && <span className="badge me-1" style={{background:'#fbbf24',color:'#78350f',fontSize:'0.7rem'}}>LIBRARY</span>}
                       {s.type_server}
                     </td>
                     <td>{s.kapasitas_server ? `${s.kapasitas_server} GB` : '-'}</td>
@@ -244,10 +244,8 @@ function ServerTab() {
                 <div className="col-12">
                   <label className="form-label small fw-semibold">Type Server *</label>
                   <input className={cls('type_server')} placeholder="ims3000 atau AAM library"
-                    value={fc('type_server')} onChange={e => setFc('type_server', e.target.value)}
-                    readOnly={!!editItem?.is_aam}
-                    style={editItem?.is_aam ? {background:'var(--surface-2)',cursor:'not-allowed'} : {}} />
-                  {editItem?.is_aam && <div className="form-text">AAM Library tidak dapat diubah namanya</div>}
+                    value={fc('type_server')} onChange={e => setFc('type_server', e.target.value)} />
+                  {editItem?.is_aam && <div className="form-text">Library — nama dapat diubah, data tidak dapat dihapus</div>}
                   {formErr.type_server && <div className="invalid-feedback">{formErr.type_server}</div>}
                 </div>
                 <div className="col-md-6">
