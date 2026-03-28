@@ -160,6 +160,15 @@ const buildPDF = (films, outletName, settings, servers) => {
   // ── Render MENGETAHUI (kanan) — label di atas garis ──
   doc.text('MENGETAHUI', rightCx, sectionY, { align: 'center' });
 
+  // ── Render gambar tanda tangan ──
+  const ttdH = Math.max(lineY - sectionY - 5, 8);
+  if (settings?.ttd_yang_membuat) {
+    try { doc.addImage(settings.ttd_yang_membuat, 'PNG', leftLineX, sectionY + 3, 54, ttdH); } catch(e) {}
+  }
+  if (settings?.ttd_yang_mengetahui) {
+    try { doc.addImage(settings.ttd_yang_mengetahui, 'PNG', rightLineX, sectionY + 3, 54, ttdH); } catch(e) {}
+  }
+
   // ── Render NOTE (tengah) ──
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7.5);
