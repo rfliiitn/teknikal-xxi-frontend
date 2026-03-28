@@ -69,6 +69,29 @@ function SignaturePad({ value, onChange }) {
     onChange('');
   };
 
+  const handleUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+        const x = (canvas.width - img.width * scale) / 2;
+        const y = (canvas.height - img.height * scale) / 2;
+        ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+        loaded.current = true;
+        onChange(canvas.toDataURL('image/png'));
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
   return (
     <div>
       <canvas
@@ -84,10 +107,15 @@ function SignaturePad({ value, onChange }) {
         onTouchMove={draw}
         onTouchEnd={stopDraw}
       />
-      <div className="mt-1">
+      <div className="d-flex gap-2 mt-1 align-items-center flex-wrap">
         <button type="button" className="btn btn-sm btn-outline-danger" onClick={handleClear}>
           <i className="bi bi-x-lg me-1" />Hapus
         </button>
+        <label className="btn btn-sm btn-outline-secondary mb-0" style={{ cursor: 'pointer' }}>
+          <i className="bi bi-upload me-1" />Upload Foto
+          <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUpload} />
+        </label>
+        <span className="text-warning small"><i className="bi bi-exclamation-triangle me-1" />Jika upload foto, wajib <strong>remove background</strong> terlebih dahulu agar tidak ada garis tepi pada tanda tangan di PDF.</span>
       </div>
     </div>
   );
