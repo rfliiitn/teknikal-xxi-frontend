@@ -55,23 +55,26 @@ const buildOrderDoc = (orders, settings, outletName) => {
 
   autoTable(doc, {
     startY: 33,
-    head: [['NO', 'NAMA BARANG', 'JUMLAH', 'TGL ORDER', 'TGL DITERIMA', 'STATUS', 'KETERANGAN']],
+    head: [['NO', 'NAMA BARANG', 'JUMLAH', 'TGL ORDER', 'TGL DITERIMA', 'NO FPKB', 'STATUS', 'KETERANGAN']],
     body: orders.map((o, i) => [
       i + 1,
       o.nama_barang?.toUpperCase() || '',
       o.jumlah_barang,
       o.tanggal_order,
       o.tanggal_diterima || '-',
+      o.no_fpkb || '-',
       o.status_barang?.toUpperCase() || '',
       o.keterangan || '-'
     ]),
     styles: { fontSize: 8.5, cellPadding: 2.5, lineColor: [0,0,0], lineWidth: 0.3 },
     headStyles: { fillColor: [255,255,255], textColor: [0,0,0], fontStyle: 'bold', lineWidth: 0.3, fontSize: 8 },
-    columnStyles: { 1: { cellWidth: 50 }, 6: { cellWidth: 35 } },
+    columnStyles: { 1: { cellWidth: 45 }, 7: { cellWidth: 30 } },
     didParseCell: (data) => {
       if (data.section === 'body') {
         const row = orders[data.row.index];
-        data.cell.styles.textColor = row?.status_barang === 'Sudah Diterima' ? [0,128,0] : [200,0,0];
+        if (data.column.index === 6) {
+          data.cell.styles.textColor = row?.status_barang === 'Sudah Diterima' ? [0,128,0] : [200,0,0];
+        }
       }
     },
     margin: { left: 14, right: 14 }
@@ -106,11 +109,11 @@ const buildMaintenanceDoc = (items, settings, outletName) => {
 
   autoTable(doc, {
     startY: 33,
-    head: [['NO', 'TANGGAL', 'MAINTENANCE', 'KETERANGAN']],
-    body: items.map((m, i) => [i + 1, m.tanggal, m.maintenance?.toUpperCase() || '', m.keterangan || '-']),
+    head: [['NO', 'TANGGAL', 'MAINTENANCE', 'PETUGAS', 'KETERANGAN']],
+    body: items.map((m, i) => [i + 1, m.tanggal, m.maintenance?.toUpperCase() || '', m.petugas?.toUpperCase() || '-', m.keterangan || '-']),
     styles: { fontSize: 9, cellPadding: 2.5, lineColor: [0,0,0], lineWidth: 0.3, textColor: [0,0,0] },
     headStyles: { fillColor: [255,255,255], textColor: [0,0,0], fontStyle: 'bold', lineWidth: 0.3 },
-    columnStyles: { 2: { cellWidth: 60 }, 3: { cellWidth: 70 } },
+    columnStyles: { 2: { cellWidth: 55 }, 3: { cellWidth: 35 }, 4: { cellWidth: 60 } },
     margin: { left: 14, right: 14 }
   });
 
